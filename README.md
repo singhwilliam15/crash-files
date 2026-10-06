@@ -1,5 +1,7 @@
 # The Crash Files
 
+**Live app: [the-crash-files.streamlit.app](https://the-crash-files.streamlit.app)**
+
 An interactive casebook of 57 market crashes, shocks and scams from Tulip Mania (1637) to the 2025 tariff crash, including Indian cases such as Harshad Mehta, Satyam, IL&FS and Adani–Hindenburg.
 
 Each case covers:
