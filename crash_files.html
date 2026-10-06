@@ -1,0 +1,915 @@
+<title>The Crash Files</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;0,6..96,800;1,6..96,500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a market archive. Ticker-tape hero → timeline → "damage, measured" dashboard → case file (story + key dates + sources) → patterns. */
+:root{
+  --bg:#F1F2EC; --surface:#FAFAF6; --surface-2:#E8EAE2; --ink:#121E2C; --muted:#536071; --faint:#8A93A0; --rule:#D3D8CC;
+  --loss:#B8322A; --gain:#1E7A52; --focus:#2a78d6; --tape:#121E2C; --tape-ink:#F1F2EC;
+  /* categorical, fixed order (validated): systemic, shock, india, bubble, fraud */
+  --c-systemic:#2a78d6; --c-shock:#eb6834; --c-india:#1baf7a; --c-bubble:#eda100; --c-fraud:#e87ba4;
+  --f-display:"Bodoni Moda","Didot","Bodoni 72",Georgia,serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0C121B; --surface:#131A24; --surface-2:#1B2431; --ink:#E9EDF3; --muted:#9BA7B8; --faint:#6C7889; --rule:#283445;
+  --loss:#FF7B6C; --gain:#4CC79A; --focus:#86A8F0; --tape:#E9EDF3; --tape-ink:#0C121B;
+  --c-systemic:#3987e5; --c-shock:#d95926; --c-india:#199e70; --c-bubble:#c98500; --c-fraud:#d55181; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0C121B; --surface:#131A24; --surface-2:#1B2431; --ink:#E9EDF3; --muted:#9BA7B8; --faint:#6C7889; --rule:#283445;
+  --loss:#FF7B6C; --gain:#4CC79A; --focus:#86A8F0; --tape:#E9EDF3; --tape-ink:#0C121B;
+  --c-systemic:#3987e5; --c-shock:#d95926; --c-india:#199e70; --c-bubble:#c98500; --c-fraud:#d55181; color-scheme:dark;}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;padding-inline:20px;padding-block:0 64px}
+.wrap{max-width:1200px;margin:0 auto}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:3px}
+.mono{font-family:var(--f-mono)}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h2.sec{font-family:var(--f-display);font-weight:700;font-size:clamp(28px,4vw,42px);line-height:1.05;margin:0;text-wrap:balance}
+.sec-head{display:grid;gap:8px;margin-bottom:20px}
+.sec-head p{margin:0;max-width:66ch;color:var(--muted)}
+section.block{padding-block:40px;border-top:1px solid var(--rule)}
+
+/* Ticker tape */
+.tape{margin-inline:-20px;background:var(--tape);color:var(--tape-ink);overflow:hidden;white-space:nowrap;font-family:var(--f-mono);font-size:13px;letter-spacing:.04em}
+.tape-track{display:inline-flex;gap:36px;padding-block:9px;animation:tape 90s linear infinite;padding-left:20px}
+.tape span b{font-weight:500}
+.tape .dn{color:var(--c-shock)}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.tape-track{animation:none}}
+
+/* Hero */
+header.hero{padding-block:48px 36px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:36px;align-items:end}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(52px,9vw,112px);line-height:.9;margin:10px 0 16px;letter-spacing:-.015em}
+h1 em{font-style:italic;font-weight:500;color:var(--loss)}
+.lede{max-width:56ch;color:var(--muted);margin:0;font-size:17px}
+.records{display:grid;grid-template-columns:1fr 1fr;border-top:2px solid var(--ink)}
+.rec{padding:14px 12px 14px 0;border-bottom:1px solid var(--rule);display:grid;gap:2px;cursor:pointer;background:none;border-left:0;border-right:0;border-top:0;text-align:left;color:inherit;font:inherit}
+.rec:nth-child(odd){padding-right:16px;border-right:1px solid var(--rule)}
+.rec:nth-child(even){padding-left:16px}
+.rec:hover b{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+.rec small{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.rec b{font-family:var(--f-mono);font-weight:500;font-size:clamp(24px,3vw,32px);color:var(--loss);font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.1}
+.rec span{font-size:13px;color:var(--muted)}
+
+/* Legend + chips */
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}
+.chip{font:500 13px var(--f-body);border:1px solid var(--rule);background:var(--surface);color:var(--ink);padding:5px 11px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* Timeline */
+.tl-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:10px 20px;margin-bottom:8px}
+.scroll-x{overflow-x:auto}
+.scroll-x svg{display:block;width:100%;min-width:700px;height:auto}
+.tl-g{cursor:pointer}
+.note{font-size:13px;color:var(--muted);margin:6px 0 0}
+
+/* Dashboard */
+.dash{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:20px;min-width:0;display:grid;gap:10px;align-content:start}
+.card>*{min-width:0}
+.card h3{margin:0;font-family:var(--f-display);font-weight:700;font-size:22px;line-height:1.15}
+.card .sub{margin:0;font-size:14px;color:var(--muted);max-width:60ch}
+.span-12{grid-column:span 12}.span-7{grid-column:span 7}.span-5{grid-column:span 5}
+.card svg{display:block;width:100%;height:auto;overflow:visible}
+.bar-row{cursor:pointer}
+.bar-row:hover .bar-lab{text-decoration:underline}
+.btn{font:500 14px var(--f-body);background:transparent;border:1px solid var(--rule);color:var(--ink);padding:8px 14px;border-radius:8px;cursor:pointer;justify-self:start}
+.btn:hover{background:var(--surface-2)}
+.tip{position:fixed;z-index:20;pointer-events:none;background:var(--ink);color:var(--bg);font-size:13px;line-height:1.4;padding:8px 10px;border-radius:6px;max-width:260px;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+.tip b{display:block;font-weight:600}
+.tip span{opacity:.8}
+
+/* Reader */
+.reader{display:grid;grid-template-columns:290px minmax(0,1fr);gap:28px}
+.index{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);align-self:start;display:grid;gap:12px;max-height:calc(100vh - 24px);min-width:0;grid-template-rows:auto auto minmax(0,1fr)}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.search{width:100%;font:15px var(--f-body);padding:9px 12px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:8px}
+.list{overflow-y:auto;display:grid;gap:1px;padding-right:4px;min-height:0;align-content:start}
+.list button{all:unset;cursor:pointer;display:grid;grid-template-columns:10px 40px 1fr;gap:10px;align-items:baseline;padding:7px 10px;border-radius:6px}
+.list button:hover{background:var(--surface-2)}
+.list button[aria-current="true"]{background:var(--surface);box-shadow:inset 0 0 0 1px var(--rule)}
+.list button:focus-visible{outline:2px solid var(--focus)}
+.list .dot{transform:translateY(1px)}
+.list .yr{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.list .nm{font-size:14.5px;line-height:1.35}
+.list .empty{color:var(--muted);font-size:14px;padding:8px 10px}
+
+.case{min-width:0;display:grid;gap:18px}
+.case-head{background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:clamp(20px,4vw,36px);display:grid;gap:10px;position:relative;overflow:hidden}
+.case-head::before{content:"";position:absolute;inset:0 0 auto 0;height:6px;background:var(--cat)}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:13px;color:var(--muted)}
+.tag{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);border:1px solid var(--rule);padding:3px 9px;border-radius:999px}
+.case-head h2{font-family:var(--f-display);font-weight:800;font-size:clamp(32px,5vw,56px);line-height:1.02;margin:4px 0 0;text-wrap:balance}
+.hook{font-family:var(--f-display);font-style:italic;font-size:clamp(18px,2.2vw,22px);color:var(--muted);margin:0;max-width:60ch}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border-top:1px solid var(--rule);margin-top:12px}
+.kpi{padding:14px 14px 4px 0;display:grid;gap:4px;align-content:start;min-width:0}
+.kpi+.kpi{padding-left:14px;border-left:1px solid var(--rule)}
+.kpi small{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.kpi b{font-family:var(--f-mono);font-weight:500;font-size:clamp(22px,2.6vw,30px);line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.kpi b.neg{color:var(--loss)}
+.kpi span{font-size:12.5px;color:var(--muted);line-height:1.4}
+.meter{height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden;margin-top:4px}
+.meter i{display:block;height:100%;background:var(--loss);border-radius:4px}
+.context{display:grid;gap:4px;margin-top:6px}
+.context svg{display:block;width:100%;height:auto;overflow:visible}
+
+.case-body{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:clamp(18px,3vw,28px);min-width:0}
+.panel h3{margin:0 0 12px;font-family:var(--f-mono);font-weight:500;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+ol.beats{list-style:none;margin:0;padding:0;display:grid}
+.beat{display:grid;grid-template-columns:44px minmax(0,1fr);gap:14px;padding-block:16px;border-top:1px dashed var(--rule)}
+.beat:first-child{border-top:0;padding-top:0}
+.beat .num{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--cat);display:grid;place-items:center;font-family:var(--f-mono);font-size:13px;font-weight:500}
+.beat.lesson .num{background:var(--cat);color:#fff;border-color:var(--cat)}
+.beat h4{margin:0 0 6px;font-family:var(--f-display);font-weight:700;font-size:20px;line-height:1.2}
+.beat h4 small{font-family:var(--f-body);font-weight:400;font-size:13px;color:var(--muted);margin-left:8px}
+.beat .body{max-width:66ch;display:grid;gap:10px}
+.beat p{margin:0}
+.flow{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:0;counter-reset:f}
+.flow li{position:relative;padding:10px 12px 10px 40px;border:1px solid var(--rule);border-radius:8px;background:var(--bg);counter-increment:f;font-size:15px}
+.flow li::before{content:counter(f);position:absolute;left:12px;top:10px;font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.flow li+li{margin-top:18px}
+.flow li+li::after{content:"";position:absolute;left:22px;top:-18px;height:18px;border-left:1.5px solid var(--cat)}
+.flow li+li::before{}
+.beat.lesson .body p{font-weight:500}
+
+.side{display:grid;gap:18px;min-width:0}
+ol.dates{list-style:none;margin:0;padding:0;display:grid}
+ol.dates li{display:grid;grid-template-columns:12px minmax(0,1fr);gap:10px;position:relative;padding-bottom:14px}
+ol.dates li:last-child{padding-bottom:0}
+ol.dates li::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--cat);margin-top:5px;position:relative;z-index:1}
+ol.dates li::after{content:"";position:absolute;left:6px;top:14px;bottom:0;border-left:1.5px solid var(--rule)}
+ol.dates li:last-child::after{display:none}
+ol.dates time{display:block;font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+ol.dates span{font-size:14.5px;line-height:1.4}
+.links{display:grid;gap:14px}
+.links h5{margin:0 0 6px;font:500 11px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px}
+.links ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.links a{display:grid;gap:1px;text-decoration:none;padding:9px 11px;border:1px solid var(--rule);border-radius:8px;background:var(--bg)}
+.links a:hover{border-color:var(--ink)}
+.links a b{font-weight:500;font-size:14px;line-height:1.35}
+.links a span{font-family:var(--f-mono);font-size:11px;color:var(--muted);word-break:break-all}
+.ico{width:14px;height:14px;flex:none}
+.pager{display:flex;justify-content:space-between;gap:12px}
+.pager button{font:500 14px var(--f-body);background:var(--surface);border:1px solid var(--rule);color:var(--ink);padding:10px 14px;border-radius:10px;cursor:pointer;max-width:48%;text-align:left}
+.pager button:last-child{text-align:right}
+.pager button:hover{border-color:var(--ink)}
+.pager button small{display:block;color:var(--muted);font-size:12px}
+
+/* Patterns */
+.tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:680px;font-size:15px}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-family:var(--f-mono);font-weight:500;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600;width:24%}
+td .lnk{all:unset;cursor:pointer;text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px;display:inline-flex;align-items:center;gap:5px;margin:0 8px 2px 0;font-size:14px}
+td .lnk:hover{text-decoration-color:var(--ink)}
+.rules{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:22px}
+.rule{padding:14px;border:1px solid var(--rule);border-radius:10px;display:grid;gap:4px;background:var(--surface)}
+.rule b{font-family:var(--f-display);font-size:19px;font-weight:700;line-height:1.2}
+.rule span{font-size:13px;color:var(--muted)}
+.foot{font-size:13px;color:var(--muted);margin-top:28px;max-width:80ch}
+
+@media (max-width:980px){
+  header.hero{grid-template-columns:minmax(0,1fr)}
+  .span-7,.span-5{grid-column:span 12}
+  .case-body{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:820px){
+  .reader{grid-template-columns:minmax(0,1fr)}
+  .index{position:static;max-height:none;grid-template-rows:none}
+  .list{max-height:260px;border:1px solid var(--rule);border-radius:10px;padding:4px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi:nth-child(3){padding-left:0;border-left:0}
+  .kpi:nth-child(n+3){border-top:1px solid var(--rule)}
+}
+@media (max-width:480px){.records{grid-template-columns:1fr}.rec:nth-child(odd){border-right:0;padding-right:0}.rec:nth-child(even){padding-left:0}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+
+<div class="tape" aria-hidden="true"><div class="tape-track" id="tape"></div></div>
+
+<div class="wrap">
+  <header class="hero">
+    <div>
+      <div class="eyebrow" id="eyebrow">Bubbles, crises, shocks and frauds</div>
+      <h1>The Crash <em>Files</em></h1>
+      <p class="lede">A casebook of the bubbles, panics, shocks and frauds that moved markets. Each case covers how it happened, the money lost, how far prices fell, how long recovery took, and the reports written afterwards.</p>
+    </div>
+    <div class="records" id="records"></div>
+  </header>
+
+  <section class="block" aria-labelledby="tl-h">
+    <div class="tl-head">
+      <div class="sec-head" style="margin:0"><div class="eyebrow">Timeline</div><h2 class="sec" id="tl-h">Four centuries of blow-ups</h2></div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="scroll-x"><svg id="tl" viewBox="0 0 1000 290" role="img" aria-label="Timeline of all cases in five lanes by type"></svg></div>
+    <p class="note">The axis is compressed between 1730 and 1920. Click any dot to open the case.</p>
+  </section>
+
+  <section class="block" aria-labelledby="dash-h">
+    <div class="sec-head"><div class="eyebrow">The damage, measured</div><h2 class="sec" id="dash-h">How big, how deep, how long</h2>
+      <p>Approximate headline figures in nominal US dollars. They measure different things (market value, fraud size, fines, liabilities), so read them as orders of magnitude, not like-for-like. Hover for detail; click to open a case.</p></div>
+    <div class="dash">
+      <div class="card span-12">
+        <h3>Headline loss, largest first</h3>
+        <p class="sub">Log scale: each gridline is ten times the one before. A $589bn one-day loss and a $310m fraud fit on the same axis.</p>
+        <div id="lossChart"></div>
+        <button class="btn" id="lossMore" type="button">Show all cases</button>
+      </div>
+      <div class="card span-7">
+        <h3>How far markets fell vs how long they took to recover</h3>
+        <p class="sub">Peak-to-trough fall of the main index (horizontal) against months until it regained its old peak (vertical, log scale). Deep falls in bubbles take decades; shock crashes recover in months.</p>
+        <div id="scatter"></div>
+      </div>
+      <div class="card span-5">
+        <h3>Cases by decade</h3>
+        <p class="sub">The 2020s already have nearly as many cases as the 2000s, and shock events dominate.</p>
+        <div id="decades"></div>
+        <div class="legend" id="legend2"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="cases-h">
+    <div class="sec-head"><div class="eyebrow">Case files</div><h2 class="sec" id="cases-h">Read a case</h2></div>
+    <div class="reader">
+      <aside class="index" aria-label="Case index">
+        <div class="filters" id="filters" role="group" aria-label="Filter by type"></div>
+        <input class="search" id="q" type="search" placeholder="Search: repo, auditor, NBFC, SEBI…" aria-label="Search cases">
+        <div class="list" id="list"></div>
+      </aside>
+      <article class="case" id="case" aria-live="polite"></article>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="pat-h">
+    <div class="sec-head"><div class="eyebrow">Patterns</div><h2 class="sec" id="pat-h">Nine mechanisms behind almost every case</h2>
+      <p>Naming the mechanism shows an interviewer you understand the story, not just the headline. Click a case to jump to it.</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Pattern</th><th>Where it appears</th><th>Warning sign</th></tr></thead>
+      <tbody id="pat"></tbody>
+    </table></div>
+    <div class="sec-head" style="margin-top:36px"><div class="eyebrow">Legacy</div><h2 class="sec" style="font-size:clamp(24px,3vw,32px)">Rules written after a crash</h2></div>
+    <div class="rules" id="rules"></div>
+    <p class="foot">Figures are approximate, converted to US dollars at rough rates of the time, and drawn from the linked reports, news coverage and general knowledge. Check exact numbers against the primary sources before quoting them. Cases involving allegations (Adani–Hindenburg, Jane Street) describe allegations; the companies dispute them.</p>
+  </section>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+const S=[
+{id:"tulip",cat:"bubble",year:1637,when:"1634–37",place:"Netherlands",name:"Tulip Mania",hook:"A futures market in flowers that had not bloomed yet.",stat:["−90%+","top bulb prices, February 1637"],
+b:["The Dutch Republic was Europe's richest economy, flush with trade profits. Tulips were a new luxury, and rare \"broken\" tulips with flame-like streaks were status symbols.",
+["Nobody knew the streaks came from a virus, so they could not be bred on demand. Traders bought and sold contracts for bulbs still in the ground, in tavern \"colleges\". People bought contracts purely to flip them, and top bulbs reportedly reached the value of a house."],
+"In February 1637 a routine auction in Haarlem drew no buyers. Word spread within days and contracts became unsellable.",
+"Prices collapsed by over 90%. Courts declined to enforce many contracts, treating them as gambling debts. Modern historians think the real economic damage was smaller than legend says.",
+"The first famous case of a price detached from use value: it rose only because people expected someone else to pay more."]},
+{id:"southsea",cat:"bubble",year:1720,when:"1720",place:"Britain",name:"South Sea Bubble",hook:"Government debt swapped for shares in a dream.",stat:["£128 → £1,000","share price in months, then back below £200"],
+b:["Britain carried heavy war debt. The South Sea Company offered to take it over in exchange for a trading monopoly in South America.",
+["Debt holders swapped bonds for South Sea shares. The higher the share price, the fewer shares the company needed per bond, so insiders had every reason to pump it.","They bribed politicians with shares, spread stories of fabulous trade profits, and let investors buy on instalment credit. Copycat \"bubble companies\" floated, one for an undertaking whose purpose nobody was told."],
+"The Bubble Act, pushed by the company to kill rivals, led to prosecutions of copycats and forced selling. Instalment payments came due and the price slid.",
+"Shares fell below £200 by year-end. Isaac Newton lost a fortune. Directors' estates were seized. France's Mississippi Bubble under John Law collapsed the same year.",
+"Government-linked debt schemes plus insider promotion plus buying on credit is an explosive mix."]},
+{id:"crash1929",cat:"systemic",year:1929,when:"1929–33",place:"USA",name:"The 1929 Crash and the Great Depression",hook:"Stocks bought with 10% down, and a central bank that stood by.",stat:["−89%","Dow Jones, 1929 peak to 1932 low"],
+b:["The 1920s boom brought radios, cars and electricity, and ordinary people started buying stocks. Brokers let them buy on margin with as little as 10% down. Investment trusts piled leverage on leverage.",
+["Rising prices fed more borrowing, which fed more buying. Insider pools openly rigged stocks: buy quietly, spread hype, dump on the public. There was no SEC and almost no disclosure."],
+"In late October 1929 prices began to slide. Margin calls forced sales, which drove prices lower, which triggered more margin calls. Black Thursday (24 Oct) and Black Tuesday (29 Oct) followed.",
+"About 9,000 banks failed as depositors ran. The Fed let the money supply shrink, and US unemployment hit about 25%.",
+"Leverage turns a fall into a spiral. The response created the SEC, deposit insurance (FDIC) and Glass-Steagall. The Fed's passivity became the textbook mistake central banks now avoid."]},
+{id:"blackmonday",cat:"systemic",year:1987,when:"19 Oct 1987",place:"Global",name:"Black Monday",hook:"Thousands of programs told to sell at the same moment.",stat:["−22.6%","Dow Jones in a single day"],
+b:["Stocks had risen about 40% in 1987 alone. Institutions bought \"portfolio insurance\", a computer strategy that sells index futures automatically as markets fall.",
+["No fraud here. The danger was that thousands of programs were set to do the same thing at the same time."],
+"A bad trade deficit number and rising rates sparked selling. Portfolio insurance kicked in, pushing prices down further, which triggered more selling.",
+"Still the largest one-day percentage drop in the Dow. The Greenspan Fed promised liquidity, and markets recovered within two years.",
+"Automated strategies can create a feedback loop. Circuit breakers, trading halts after big falls, exist because of this day."]},
+{id:"japan",cat:"systemic",year:1990,when:"1986–91",place:"Japan",name:"Japan's Asset Bubble",hook:"Land prices so high the Palace grounds outvalued California.",stat:["−60%","Nikkei by 1992; regained its peak only in 2024"],
+b:["After the 1985 Plaza Accord strengthened the yen, the Bank of Japan cut rates to support exporters. Cheap credit flooded into land and stocks.",
+["Banks lent against land as collateral, and land prices rose because banks kept lending against it. The Imperial Palace grounds were said to be worth more than all of California. The Nikkei hit about 38,900 in December 1989."],
+"The BoJ raised rates sharply from 1989 and capped property lending in 1990.",
+"Banks hid bad loans for years and kept \"zombie\" firms alive, producing the Lost Decades of deflation.",
+"Delay in recognising bad loans prolongs a crisis. Japan is why regulators now push fast bank clean-ups."]},
+{id:"india1991",cat:"systemic",year:1991,when:"1990–91",place:"India",name:"India's Balance of Payments Crisis",hook:"Gold flown out of the country to keep the lights on.",stat:["~3 weeks","of imports left in forex reserves"],
+b:["India ran large fiscal deficits through the 1980s and borrowed abroad, including short-term commercial debt. Exports were weak under the licence raj.",
+["Not a fraud: a slow-building external funding gap."],
+"The 1990 Gulf War spiked oil prices and cut remittances from Gulf workers. Political instability and a rating downgrade made foreign lenders and NRIs pull money out.",
+"The RBI pledged gold, airlifted to London and Zurich, as loan collateral. India took an IMF loan and devalued the rupee.",
+"The crisis launched the 1991 LPG reforms under Narasimha Rao and Manmohan Singh, and is why India now keeps large forex reserves."]},
+{id:"asian",cat:"systemic",year:1997,when:"1997–98",place:"Thailand, Indonesia, Korea, Malaysia",name:"The Asian Financial Crisis",hook:"Dollar debts that became unpayable overnight.",stat:["−80%","Indonesian rupiah against the dollar"],
+b:["Thailand, Indonesia, South Korea and Malaysia grew fast with currencies pegged to the dollar, so firms borrowed cheaply in dollars, short-term, to fund long-term property and industrial projects.",
+["Foreign hot money poured in. Korea's chaebol and Thai finance companies were heavily leveraged, and crony lending meant weak projects got funded."],
+"Speculators bet the Thai baht peg was unsustainable. Thailand burned its reserves defending it, then floated the baht on 2 July 1997. It crashed.",
+"Dollar debts became unpayable in local currency. Contagion hit Indonesia, Korea and Malaysia. The IMF lent with harsh austerity conditions; Malaysia imposed capital controls instead.",
+"Currency mismatch plus maturity mismatch is deadly. Emerging markets now hoard reserves as self-insurance."]},
+{id:"ltcm",cat:"systemic",year:1998,when:"1998",place:"USA / Russia",name:"Russia's Default and LTCM",hook:"Two Nobel laureates, 25x leverage, and one bad August.",stat:["$4.6bn","lost by LTCM in a few months"],
+b:["Long-Term Capital Management was run by star bond traders and Nobel laureates Myron Scholes and Robert Merton. It returned about 40% a year.",
+["LTCM bet that small price gaps between similar bonds would close. Each bet earned little, so it used enormous leverage: about 25x on balance sheet and over $1 trillion in derivative notional. Its models assumed historical correlations would hold."],
+"In August 1998 Russia defaulted on its domestic debt. Investors fled to safety, so the gaps LTCM bet would shrink widened everywhere at once.",
+"Fearing a fire sale that would hit every major bank, the New York Fed organised a $3.6 billion rescue by 14 banks.",
+"In a crisis correlations go to one and liquidity disappears. Models built on normal times fail exactly when they matter, a core critique of VaR."]},
+{id:"dotcom",cat:"systemic",year:2000,when:"1995–2002",place:"USA",name:"The Dot-com Bubble",hook:"Valued on clicks and eyeballs instead of profits.",stat:["−78%","Nasdaq, March 2000 to October 2002"],
+b:["The internet was genuinely transformative. Low rates and a new class of online retail traders fed a rush into anything with \".com\" in its name.",
+["Companies with no profits, sometimes no revenue, went public at huge valuations. Bank analysts hyped stocks their own firms were underwriting. Pets.com raised millions selling pet food at a loss."],
+"The Fed raised rates through 1999–2000. Cash-burning firms could not raise more money. The Nasdaq peaked in March 2000.",
+"About $5 trillion in market value was wiped out. The 2003 Global Analyst Research Settlement fined banks for conflicted research.",
+"A real technology can still be a bad investment at the wrong price. Analyst independence rules come from this era."]},
+{id:"gfc",cat:"systemic",year:2008,when:"2007–09",place:"USA, then global",name:"The 2008 Global Financial Crisis",hook:"Everyone in the chain got paid on volume. Nobody held the risk.",stat:["~−50%","global stocks, peak to trough"],
+b:["After 2001 the Fed cut rates to 1%. Global savings flooded into US assets. Home prices rose for years, and everyone believed national house prices could not fall.",
+["The story runs as a chain:",["Lenders gave subprime mortgages with teaser rates and often no income checks (\"NINJA\" loans).","They sold the loans to banks that pooled thousands into mortgage-backed securities (MBS).","Banks sliced MBS into tranches and re-pooled the riskier slices into CDOs. Issuer-paid rating agencies rated most of it AAA.","AIG sold credit default swaps on these securities without the capital to pay claims.","Investment banks funded holdings with overnight repo, at leverage of 30x or more."]],
+"Teaser rates reset and home prices fell from 2006–07. AAA paper was downgraded and nobody knew who held the losses. Bear Stearns was rescued in March 2008; Lehman Brothers failed on 15 September 2008.",
+"Money market funds broke the buck, interbank lending froze, and AIG needed a $182 billion bailout. TARP put $700 billion into banks; the Fed cut to zero and began quantitative easing.",
+"Originate-to-distribute broke the link between lending and risk. The response: Dodd-Frank, the Volcker Rule, Basel III capital and liquidity rules, and stress tests."]},
+{id:"eurozone",cat:"systemic",year:2010,when:"2009–12",place:"Eurozone",name:"The Eurozone Debt Crisis",hook:"German interest rates, Greek budgets.",stat:["12.7%","Greek deficit to GDP, double the earlier claim"],
+b:["Joining the euro let Greece, Portugal, Italy and Spain borrow at Germany-like rates. Greece spent heavily; Ireland and Spain had bank-funded property bubbles.",
+["Greece understated its deficits for years, partly using currency swaps to disguise debt."],
+"In October 2009 Greece's new government revealed the true deficit. Bond yields spiked.",
+"Greece, Ireland, Portugal and Cyprus needed bailouts; Greece restructured its debt in 2012. In July 2012 Mario Draghi pledged the ECB would do \"whatever it takes\", and yields fell.",
+"A shared currency without a shared fiscal policy leaves weak members exposed. The sovereign–bank doom loop led to the EU banking union."]},
+{id:"svb",cat:"systemic",year:2023,when:"March 2023",place:"USA / Switzerland",name:"SVB and Credit Suisse",hook:"A bank run at the speed of a smartphone.",stat:["$42bn","pulled from SVB in a single day"],
+b:["In 2020–21 Silicon Valley Bank's startup deposits tripled. It invested them in long-dated Treasuries and MBS at near-zero rates.",
+["No fraud. SVB did not hedge its interest-rate risk. When the Fed hiked fast in 2022, those bonds lost value, and held-to-maturity accounting hid the unrealised losses."],
+"On 8 March 2023 SVB announced a $1.8 billion loss on bond sales and a capital raise. VCs told startups to pull their money.",
+"SVB failed on 10 March, followed by Signature Bank, and regulators guaranteed all deposits. Credit Suisse, already scandal-hit, was forced into UBS, wiping out about CHF 16 billion of AT1 bonds.",
+"Interest-rate risk can sink a bank without a single bad loan, and concentrated uninsured deposits can run at digital speed."]},
+{id:"barings",cat:"fraud",year:1995,when:"1995",place:"Singapore / UK",name:"Barings Bank",hook:"One trader, one secret account, a 233-year-old bank gone.",stat:["£827m","loss, more than the bank's capital"],
+b:["Barings was Britain's oldest merchant bank. In Singapore, Nick Leeson ran both the trading desk and the back office that settled his own trades.",
+["Leeson hid losses on Nikkei futures in error account 88888 and doubled down to win them back. Because he controlled settlement, head office saw only reported profits and kept sending cash for \"margin\"."],
+"The Kobe earthquake on 17 January 1995 sent the Nikkei sharply lower and broke his bets.",
+"Barings was sold to ING for £1. Leeson fled, was arrested, and was jailed in Singapore.",
+"Segregation of duties: front office and back office must be separate. A core operations-control principle."]},
+{id:"enron",cat:"fraud",year:2001,when:"2001",place:"USA",name:"Enron",hook:"America's most innovative company, built on entities that only worked while the stock rose.",stat:["$618m","Q3 2001 loss that started the collapse"],
+b:["Enron turned from a gas pipeline firm into an energy-trading giant, named Fortune's most innovative company six years running.",
+["Three tricks worked together:",["Mark-to-market accounting booked a long-term deal's entire estimated profit on day one.","Special purpose entities run by CFO Andrew Fastow took bad assets and debt off the balance sheet, funded with Enron's own stock.","Auditor Arthur Andersen earned large consulting fees and signed off on everything."]],
+"In 2001 the share price fell, breaking the SPEs. Enron reported the loss plus a $1.2 billion cut in equity.",
+"Bankruptcy in December 2001, then the largest in US history. Employees lost pensions held in Enron stock. Andersen collapsed.",
+"Sarbanes-Oxley (2002): CEOs and CFOs certify financials personally, and internal controls are audited (SOX 404)."]},
+{id:"worldcom",cat:"fraud",year:2002,when:"2002",place:"USA",name:"WorldCom",hook:"Turning everyday costs into assets.",stat:["$11bn","total accounting fraud"],
+b:["WorldCom grew through over 60 acquisitions, including MCI. After the dot-com bust telecom demand fell, but Wall Street still expected growth.",
+["CFO Scott Sullivan reclassified billions of \"line costs\", fees paid to other networks, from operating expense to capital expenditure. Spreading the cost over years made profit jump immediately."],
+"Internal auditor Cynthia Cooper and her team found the entries in 2002 and reported them to the audit committee.",
+"Bankruptcy in July 2002, bigger than Enron. CEO Bernie Ebbers got 25 years.",
+"Check whether capex makes sense for the business and compare free cash flow with net income. Internal audit independence matters."]},
+{id:"madoff",cat:"fraud",year:2008,when:"exposed Dec 2008",place:"USA",name:"Bernie Madoff",hook:"Returns too smooth to be real, for decades.",stat:["$65bn","paper losses to investors"],
+b:["Madoff was a former Nasdaq chairman with a respected market-making firm. His investment business ran separately and quietly.",
+["He promised steady returns of about 10–12% a year with almost no losing months, claiming an options strategy but making no real trades. New money paid old investors: a Ponzi scheme. Feeder funds brought clients; a tiny audit firm signed off. Harry Markopolos warned the SEC repeatedly from 2000."],
+"In the 2008 crisis clients asked for about $7 billion he could not pay. He confessed to his sons, who reported him.",
+"Madoff got 150 years. A trustee has recovered over $14 billion for victims.",
+"Smooth returns are a red flag. Check custody (who holds the assets) and whether the auditor is credible."]},
+{id:"socgen",cat:"fraud",year:2008,when:"January 2008",place:"France",name:"Société Générale and Jérôme Kerviel",hook:"A trader who knew exactly when the controls would look.",stat:["€4.9bn","loss unwinding his positions"],
+b:["Kerviel had worked in SocGen's middle office before trading, so he knew how the control systems worked.",
+["He built directional bets on European index futures, about €50 billion at peak, more than the bank's capital, hidden by fake offsetting trades he cancelled before controls checked them."],
+"In January 2008 an unexpected counterparty check exposed a fictitious trade.",
+"Unwinding the positions in falling markets produced the loss.",
+"People who know the controls can beat them. Banks now enforce mandatory leave and monitor trade cancellations."]},
+{id:"libor",cat:"fraud",year:2012,when:"exposed 2012",place:"UK / global",name:"LIBOR Rigging",hook:"The world's key interest rate, set by chat message.",stat:["$350tn","of contracts priced off LIBOR"],
+b:["LIBOR was set daily from banks' own estimates of their borrowing costs and priced loans and derivatives worldwide.",
+["Traders asked rate submitters to nudge LIBOR to suit their positions, often in casual chats. During 2008 banks also lowballed submissions to look healthier."],
+"US CFTC and UK FSA investigations hit Barclays first in June 2012.",
+"Banks paid about $9 billion in fines. Trader Tom Hayes was jailed; his conviction was later quashed.",
+"A benchmark built on estimates instead of real trades can be gamed. LIBOR was replaced by transaction-based rates such as SOFR."]},
+{id:"wirecard",cat:"fraud",year:2020,when:"June 2020",place:"Germany",name:"Wirecard",hook:"A DAX company whose cash never existed.",stat:["€1.9bn","in escrow accounts that did not exist"],
+b:["Wirecard, a German payments firm, replaced Commerzbank in the DAX 30 in 2018.",
+["Much of its revenue supposedly came from third-party partners in Asia, with the cash held in Philippine escrow accounts. The Financial Times reported irregularities from 2015, but regulator BaFin investigated the journalists and banned shorting the stock."],
+"In June 2020 EY refused to sign the accounts after the Philippine banks said the documents were fake.",
+"Wirecard became the first DAX member to go insolvent. COO Jan Marsalek fled and remains a fugitive. EY faced heavy criticism.",
+"Auditors must confirm cash directly with banks. Short sellers and journalists can be the early warning, and regulators must not shield national champions."]},
+{id:"archegos",cat:"fraud",year:2021,when:"March 2021",place:"USA",name:"Archegos Capital",hook:"Each bank saw its slice. Nobody saw the whole.",stat:["$5.5bn","Credit Suisse's loss alone"],
+b:["Bill Hwang ran a family office, which faced lighter disclosure than a hedge fund, despite a past insider-trading settlement.",
+["He used total return swaps with several banks to get exposure to stocks like ViacomCBS without owning them. No bank knew the total leverage or the over $100 billion of exposure, and swaps avoided public stake disclosures."],
+"In March 2021 ViacomCBS announced a share sale and its stock fell. Archegos could not meet margin calls.",
+"Goldman and Morgan Stanley sold fast and lost little. Credit Suisse and Nomura (about $2.9 billion) were hit hard. Hwang was convicted of fraud in 2024.",
+"Counterparty risk management must look at total exposure. Hidden leverage through derivatives keeps recurring."]},
+{id:"ftx",cat:"fraud",year:2022,when:"November 2022",place:"Bahamas / USA",name:"FTX",hook:"Customer deposits used as a trading firm's piggy bank.",stat:["$8bn","hole in customer funds"],
+b:["Sam Bankman-Fried founded trading firm Alameda Research, then FTX, an exchange valued at $32 billion. He was a celebrity and political donor.",
+["FTX secretly let Alameda borrow customer deposits without limit through a hidden code exception. The money went into trading, venture bets, insider loans and property. Much of Alameda's collateral was FTT, a token FTX created itself."],
+"CoinDesk published Alameda's balance sheet, showing it was mostly FTT. Binance said it would sell its FTT. About $6 billion was withdrawn in 72 hours.",
+"FTX filed for bankruptcy on 11 November 2022. Bankman-Fried was convicted in 2023 and sentenced to 25 years.",
+"Customer assets must be segregated from the firm's own. Self-issued tokens are not real collateral."]},
+{id:"harshad",cat:"india",year:1992,when:"1992",place:"Mumbai",name:"Harshad Mehta and the Securities Scam",hook:"Bank money routed through a broker's account into the Sensex.",stat:["₹4,000–5,000 cr","estimated size of the scam"],
+b:["Banks had to hold a large share of deposits in government securities and wanted more return on them. Bond trades were settled manually through brokers, with no central depository.",
+["Banks lent to each other through ready-forward (repo) deals, swapping Bank Receipts (paper IOUs) instead of actual securities.",["Mehta, as broker, had payments flow through his own account instead of bank to bank.","Some small banks issued BRs with no securities behind them.","He used the money, in effect unsecured loans, to buy stocks like ACC, which went from about ₹200 to ₹9,000.","He sold near the top, repaid the banks, and repeated. The Sensex went from about 1,000 to over 4,400 in a year."]],
+"On 23 April 1992 Sucheta Dalal reported in the Times of India that SBI was short of securities worth about ₹500 crore.",
+"Banks demanded their money, Mehta could not repay, and the market crashed. The Janakiraman Committee and a JPC investigated. Mehta died in custody in 2001.",
+"SEBI got statutory powers in 1992. NSE (1994) brought screen trading and NSDL (1996) brought demat securities."]},
+{id:"ketan",cat:"india",year:2001,when:"2001",place:"Mumbai / Kolkata",name:"Ketan Parekh",hook:"Ten stocks, a co-operative bank, and circular trades.",stat:["K-10","stocks ramped by circular trading"],
+b:["The dot-com boom reached India and ICE (information, communications, entertainment) stocks were hot. Parekh, a CA turned broker, was the \"Bombay Bull\".",
+["He picked about ten small caps, the K-10 (Zee, HFCL, Global Trust Bank and others), and ramped them through circular trading among related entities. Loans from Madhavpura Mercantile Co-operative Bank and pay orders from Global Trust Bank funded it. He used badla to roll positions without settling."],
+"After the 2000 tech crash, a bear cartel shorted his stocks on the Calcutta exchange. He could not pay, and Madhavpura pay orders bounced in March 2001.",
+"The K-10 collapsed and Madhavpura bank failed, hurting depositors. SEBI barred Parekh from markets until 2017.",
+"SEBI abolished badla, moved to rolling settlement and launched exchange-traded derivatives."]},
+{id:"satyam",cat:"india",year:2009,when:"January 2009",place:"Hyderabad",name:"Satyam Computer Services",hook:"Riding a tiger, not knowing how to get off.",stat:["₹5,040 cr","of cash and bank balances that did not exist"],
+b:["Satyam was India's fourth-largest IT firm, NYSE-listed with Fortune 500 clients. Founder Ramalinga Raju was a celebrated entrepreneur.",
+["For years Raju inflated revenue with about 7,000 fake invoices. The fake profit showed up as fake cash on the balance sheet. Bank statements were forged, and auditor PwC did not confirm them independently."],
+"In December 2008 Satyam tried to buy Maytas Properties and Maytas Infra, owned by Raju's family, for $1.6 billion, which would have plugged the cash hole with real assets. Investors revolted. On 7 January 2009 Raju confessed in a letter.",
+"The stock fell about 78% that day. The government replaced the board and Tech Mahindra bought the company. Raju was convicted in 2015; PwC was penalised by SEBI and the US SEC.",
+"Companies Act 2013 tightened rules on independent directors, auditor rotation and fraud reporting. Watch for a huge cash pile earning little interest."]},
+{id:"nsel",cat:"india",year:2013,when:"July 2013",place:"Mumbai",name:"NSEL",hook:"A commodity exchange selling fixed returns on missing stock.",stat:["₹5,600 cr","owed to about 13,000 investors"],
+b:["The National Spot Exchange, promoted by Jignesh Shah's Financial Technologies group, traded spot commodities with regulatory exemptions, so no one fully supervised it.",
+["Paired contracts let investors buy a commodity for T+2 settlement and sell it back at T+25, like a 14–16% fixed-return loan. Borrowers were supposed to keep commodities in NSEL warehouses, but much of the stock was missing or fake."],
+"In July 2013 the government told NSEL to stop new contracts. With no new money rolling in, payments stopped.",
+"Investors faced years of recovery cases and court battles.",
+"The Forward Markets Commission merged into SEBI in 2015, putting commodity markets under one regulator."]},
+{id:"ilfs",cat:"india",year:2018,when:"2018",place:"Mumbai",name:"IL&FS",hook:"An AAA lender funding 30-year roads with 90-day paper.",stat:["₹91,000 cr","group debt across ~350 entities"],
+b:["IL&FS was an AAA-rated infrastructure lender owned by LIC, SBI, ORIX and others. Investors treated it as quasi-government.",
+["Not one fraud but a structure that hid trouble. About 350 subsidiaries funded long-gestation road and power projects with short-term commercial paper. Bad loans were rolled over, and auditors and raters did not flag the stress."],
+"In June–September 2018 group companies missed payments on commercial paper and loans. Ratings fell from AAA to junk within weeks.",
+"Mutual funds took losses and lenders stopped funding NBFCs broadly, hitting DHFL and others. The government took over the board.",
+"Asset-liability mismatch kills even AAA names. RBI tightened NBFC oversight, leading to scale-based regulation."]},
+{id:"pnb",cat:"india",year:2018,when:"January 2018",place:"Mumbai",name:"PNB and Nirav Modi",hook:"Guarantees sent through SWIFT that never reached the bank's own books.",stat:["₹13,000+ cr","PNB exposure"],
+b:["Indian banks issued Letters of Undertaking through SWIFT, letting importers borrow from overseas branches with the Indian bank as guarantor.",
+["Two PNB employees issued LoUs for Nirav Modi and Mehul Choksi's companies without collateral or approval. SWIFT was not linked to PNB's core banking system, so the guarantees never appeared on its books. New LoUs repaid old ones for about seven years."],
+"In January 2018, after one employee retired, Modi's firms asked for new LoUs. New officials asked for collateral and found the earlier ones.",
+"Modi and Choksi had already left India; Modi has been fighting extradition from the UK.",
+"RBI banned LoUs for trade credit and made banks link SWIFT to core banking. Staff rotation and system reconciliation are basic controls."]},
+{id:"yesbank",cat:"india",year:2020,when:"2019–20",place:"Mumbai",name:"Yes Bank and DHFL",hook:"Lending where others would not, then hiding what went bad.",stat:["₹8,400 cr","of Yes Bank AT1 bonds written off"],
+b:["Yes Bank grew fast under Rana Kapoor by lending to stressed corporates others avoided, such as DHFL, IL&FS, Essel and Cox & Kings.",
+["Yes Bank under-reported bad loans, with RBI finding large NPA divergences. Investigators alleged Yes Bank invested in DHFL debt while DHFL lent to firms linked to Kapoor's family. DHFL was separately accused of diverting funds through shell companies."],
+"RBI refused to extend Kapoor's term in 2018. DHFL defaulted in 2019. Yes Bank could not raise capital and deposits ran.",
+"In March 2020 RBI took control and capped withdrawals. SBI led a ₹10,000 crore rescue. DHFL became the first financial firm resolved under the IBC; Piramal took it over.",
+"Hidden NPAs and related-party lending are classic warnings. The AT1 write-off showed bank bonds can go to zero."]}
+];
+S.push(
+{id:"oil1973",cat:"shock",year:1973,when:"1973–74",place:"Global",name:"The 1973 Oil Shock",hook:"Oil prices quadrupled, and the post-war boom ended with them.",stat:["−48%","S&P 500, January 1973 to October 1974"],
+b:["The US had ended the dollar's link to gold in 1971, and inflation was already rising. The West depended on cheap Middle Eastern oil.",
+["Not a fraud. In October 1973, during the Yom Kippur War, Arab OPEC members cut output and embargoed the US and the Netherlands for backing Israel."],
+"Oil went from about $3 to about $12 a barrel within months. Fuel queues formed across the US.",
+"High inflation and recession arrived together: stagflation. The UK had its own crash, with London stocks falling about 73%.",
+"Supply shocks can crush stocks and bonds together. The IEA (1974) and strategic petroleum reserves were created in response."]},
+{id:"continental",cat:"systemic",year:1984,when:"May 1984",place:"USA",name:"Continental Illinois",hook:"The bank that gave us the phrase \"too big to fail\".",stat:["$4.5bn","FDIC rescue package"],
+b:["Continental Illinois was the seventh-largest US bank. It bought billions of risky oil and gas loans from Penn Square, a small Oklahoma bank that failed in 1982.",
+["It funded itself mainly with large wholesale and foreign deposits instead of a stable retail base, so its money could leave at the speed of a telex."],
+"In May 1984 rumours of insolvency spread on news wires. Big depositors withdrew about $10 billion within days, the first major electronic bank run.",
+"Regulators guaranteed all depositors, even uninsured ones, and the FDIC took about 80% ownership.",
+"A congressman coined \"too big to fail\" at the hearings. The case is the root of today's debate on moral hazard."]},
+{id:"sept11",cat:"shock",year:2001,when:"September 2001",place:"USA",name:"The 9/11 Attacks",hook:"Wall Street closed for four days, the longest shutdown since 1933.",stat:["−14.3%","Dow Jones in the week it reopened"],
+b:["The US was already in a mild recession after the dot-com bust.",
+["Not a financial event at all. The attacks destroyed the World Trade Center, home to many financial firms, and damaged the market's infrastructure."],
+"The NYSE stayed shut until 17 September. On reopening the Dow fell 7.1% in one day.",
+"Airlines, insurers and travel stocks were hit hardest. The Fed cut rates by 0.5% before the open and pumped in liquidity; the SEC eased rules so companies could buy back shares.",
+"Markets need backup sites and business continuity plans, now a regulatory requirement for exchanges and banks."]},
+{id:"northernrock",cat:"systemic",year:2007,when:"September 2007",place:"UK",name:"Northern Rock",hook:"Britain's first bank run in about 150 years.",stat:["−32%","share price on the first day of the run"],
+b:["Northern Rock grew fast by funding most of its mortgages through wholesale markets and securitisation rather than deposits.",
+["No fraud. Its model needed money markets to stay open so it could keep refinancing."],
+"In August 2007 money markets froze after US subprime losses. On 13 September the BBC reported Northern Rock had asked the Bank of England for emergency support. Depositors queued outside branches the next day.",
+"The government guaranteed all deposits and nationalised the bank in February 2008, a preview of the global crisis.",
+"Funding risk matters as much as credit risk. UK deposit protection was reformed and Basel III later added liquidity rules (LCR and NSFR)."]},
+{id:"flash2010",cat:"shock",year:2010,when:"6 May 2010",place:"USA",name:"The Flash Crash",hook:"A trillion dollars vanished and came back in about half an hour.",stat:["~−9%","Dow Jones intraday, within minutes"],
+b:["Markets were nervous about the Greek debt crisis. Electronic and high-frequency traders now provided most of the liquidity.",
+["A fund's algorithm sold about $4.1 billion of S&P futures, set to trade by volume without regard to price. High-frequency traders passed contracts back and forth, which looked like volume to the algorithm and made it sell faster. A UK trader, Navinder Sarao, was later charged with spoofing that added pressure."],
+"Liquidity providers pulled out. Some shares traded at a penny and others at $100,000.",
+"The Dow fell nearly 1,000 points and recovered most of it within about 36 minutes. Thousands of trades were cancelled.",
+"Single-stock circuit breakers and limit up–limit down bands were introduced. Algorithmic liquidity can disappear exactly when it is needed."]},
+{id:"downgrade2011",cat:"shock",year:2011,when:"August 2011",place:"USA",name:"The US Credit Downgrade",hook:"The \"risk-free\" asset lost its AAA, and investors bought more of it.",stat:["−6.7%","S&P 500 on 8 August 2011"],
+b:["Congress fought for months over raising the US debt ceiling while the Eurozone crisis spread to Italy and Spain.",
+["Not a fraud. A deal came only days before the deadline, with no credible long-term debt plan."],
+"On 5 August 2011 S&P cut the US from AAA to AA+ for the first time.",
+"Stocks fell sharply on the next trading day. Treasuries rallied anyway, because in a panic investors still ran to them.",
+"Political risk can hit even the safest issuer, and a safe haven is defined by liquidity as much as by rating."]},
+{id:"fukushima",cat:"shock",year:2011,when:"March 2011",place:"Japan",name:"Tōhoku Earthquake and Fukushima",hook:"An earthquake, a tsunami and a nuclear meltdown in one week.",stat:["~−16%","Nikkei over two trading days"],
+b:["Japan was a large exporter and a key link in global auto and electronics supply chains.",
+["Not financial. A magnitude 9.0 earthquake on 11 March 2011 caused a tsunami that disabled the Fukushima Daiichi nuclear plant."],
+"Reactor meltdowns and radiation fears hit on 14–15 March, with the Nikkei falling about 6% and then 10.6%.",
+"TEPCO shares lost most of their value. The yen surged to a record as Japanese investors brought money home, forcing the first coordinated G7 currency intervention since 2000. Germany decided to phase out nuclear power.",
+"Disasters move markets through supply chains and currency flows. The yen strengthens in a crisis even when Japan is the crisis."]},
+{id:"china2015",cat:"shock",year:2015,when:"2015–16",place:"China",name:"China's Stock Crash and Yuan Devaluation",hook:"A bubble state media cheered on, followed by a state rescue.",stat:["~−45%","Shanghai Composite, June to August 2015"],
+b:["State media encouraged stock buying. Millions of new retail accounts opened, funded by broker margin loans and unofficial shadow-bank lending.",
+["The Shanghai index more than doubled in a year to about 5,166 in June 2015, while the economy slowed."],
+"Regulators tightened shadow margin lending in June. Forced selling began, and on 11 August the central bank devalued the yuan by about 2%.",
+"Over half of listed companies suspended trading. The state banned big shareholders from selling and had a \"national team\" buy stocks. On 24 August global markets fell; the Dow dropped about 1,000 points at the open. New circuit breakers in January 2016 were scrapped after four days because they made selling worse.",
+"Margin-fuelled retail bubbles crash fast, and heavy state intervention can deepen panic."]},
+{id:"brexit",cat:"shock",year:2016,when:"June 2016",place:"UK",name:"The Brexit Vote",hook:"Markets priced in Remain until the results came in.",stat:["−8%","pound in one night, to a 31-year low"],
+b:["The UK held a referendum on 23 June 2016 on leaving the EU. Polls and betting markets expected Remain.",
+["Not a fraud. A political surprise that markets had not priced in."],
+"Overnight results showed Leave winning about 52% to 48%.",
+"The pound fell to about $1.32. UK bank and property stocks fell sharply, and global markets lost roughly $2 trillion in two days. The FTSE 100 recovered quickly because its companies earn mostly abroad, which a weak pound helps. The Bank of England cut rates in August.",
+"Political event risk shows up first in the currency. Look at where a company earns, not where it is listed."]},
+{id:"volmageddon",cat:"shock",year:2018,when:"5 February 2018",place:"USA",name:"Volmageddon",hook:"A popular bet that markets would stay calm blew up in one afternoon.",stat:["+116%","VIX in one day, its largest jump ever"],
+b:["After years of calm, investors piled into exchange-traded products that profited when volatility stayed low.",
+["These products had to buy VIX futures whenever volatility rose, to rebalance at the close. The more volatility rose, the more they had to buy, pushing it higher."],
+"Strong US wage data raised fears of inflation and rate hikes. Stocks fell, VIX rose, and the rebalancing created a feedback loop.",
+"The Dow fell 4.6%. Credit Suisse's inverse-VIX note, XIV, lost about 96% overnight and was shut down.",
+"Crowded trades plus mechanical rebalancing can amplify a normal sell-off. Read how a product works before buying it."]},
+{id:"covid2020",cat:"shock",year:2020,when:"February–March 2020",place:"Global",name:"The COVID-19 Crash",hook:"The fastest bear market in history.",stat:["−34%","S&P 500 in 23 trading days"],
+b:["Stocks were at record highs in February 2020. Corporate debt was high after a decade of cheap money.",
+["Not a fraud. A pandemic shut down large parts of the world economy almost overnight."],
+"Lockdowns spread from China to Italy and then worldwide. US circuit breakers halted trading four times in March, and even the Treasury market seized up in a dash for cash.",
+"The Dow fell 12.9% on 16 March and the Sensex fell 13.2% on 23 March. The Fed cut rates to zero and bought bonds without limit, and governments spent trillions. The S&P regained its record by August.",
+"Policy speed decides the depth of a crash. The rebound showed how much markets now rely on central bank support."]},
+{id:"oilneg2020",cat:"shock",year:2020,when:"20 April 2020",place:"USA",name:"Negative Oil Prices",hook:"Sellers paid buyers $37 a barrel to take oil off their hands.",stat:["−$37.63","WTI May futures settlement"],
+b:["Lockdowns crushed fuel demand, while Saudi Arabia and Russia had just fought a price war that flooded the market.",
+["Oil futures settle by physical delivery at Cushing, Oklahoma. Investors and ETFs holding May contracts had to sell before expiry or take delivery, but storage was almost full."],
+"On the day before expiry nobody wanted barrels they could not store, so the price went below zero.",
+"Some retail products, such as Bank of China's \"Crude Oil Treasure\", left investors owing money. Brokers whose systems could not handle negative prices took losses.",
+"Read the delivery terms of a futures contract, and never assume a price cannot go negative."]},
+{id:"ukraine2022",cat:"shock",year:2022,when:"February 2022",place:"Russia / global",name:"Russia's Invasion of Ukraine",hook:"A stock market that fell a third in a day and then shut for a month.",stat:["−33%","MOEX Russia index on 24 February 2022"],
+b:["Russia had massed troops on Ukraine's border for months. Europe depended on Russian gas.",
+["Not a fraud. A war and the sanctions that followed it."],
+"Russia invaded on 24 February 2022. Western countries froze about $300 billion of Russia's central bank reserves and cut major banks off from SWIFT.",
+"Moscow's stock market closed for nearly a month. Brent crude went above $130 and European gas prices spiked. Index providers removed Russia, calling it uninvestable, and fuelled inflation forced faster rate hikes worldwide.",
+"Geopolitical risk can wipe out an entire market for foreign investors, and sanctions now act as a financial weapon."]},
+{id:"giltcrisis",cat:"shock",year:2022,when:"September 2022",place:"UK",name:"The UK Gilt Crisis",hook:"A budget that nearly broke Britain's pension funds.",stat:["~$1.03","record low for the pound"],
+b:["UK pension funds used liability-driven investment (LDI), borrowing against gilts to match long-term liabilities. It worked while yields stayed stable.",
+["On 23 September 2022 Chancellor Kwasi Kwarteng announced about £45 billion of unfunded tax cuts."],
+"Gilt yields jumped. LDI funds faced collateral calls and had to sell gilts, which pushed yields higher and triggered more calls.",
+"30-year gilt yields rose above 5% in days. The Bank of England stepped in to buy gilts on 28 September. Kwarteng was sacked, and Liz Truss resigned after 45 days.",
+"Hidden leverage can sit in the safest-looking places. Regulators now require LDI funds to hold larger collateral buffers."]},
+{id:"evergrande",cat:"systemic",year:2021,when:"2021–24",place:"China",name:"Evergrande and China's Property Crisis",hook:"The world's most indebted developer, funded by homes not yet built.",stat:["$300bn+","Evergrande's total liabilities"],
+b:["Property and related industries made up a large share of China's economy. Developers sold flats before building them and used the cash to buy more land.",
+["Evergrande borrowed from banks, bondholders, suppliers and even its own staff through wealth products, and kept growing to stay ahead of its debts."],
+"In August 2020 Beijing's \"three red lines\" capped developer borrowing. Evergrande ran out of cash and defaulted on offshore bonds in December 2021.",
+"A Hong Kong court ordered its liquidation in January 2024, and it was delisted in 2025. Other developers such as Country Garden defaulted, and Chinese property shares fell for years.",
+"Pre-sale funding works only while sales grow. Policy-driven deleveraging can trigger the crisis it is meant to prevent."]},
+{id:"yen2024",cat:"shock",year:2024,when:"5 August 2024",place:"Japan / global",name:"The Yen Carry Trade Unwind",hook:"Japan's worst day since 1987, reversed the next morning.",stat:["−12.4%","Nikkei 225 on 5 August 2024"],
+b:["For years investors borrowed yen at near-zero rates to buy higher-yielding assets, including US tech stocks and Mexican pesos.",
+["The trade relied on the yen staying weak and Japanese rates staying low."],
+"The Bank of Japan raised rates on 31 July 2024. Two days later weak US jobs data hit. The yen surged and carry trades were unwound at once.",
+"The Nikkei had its biggest point drop ever and the VIX spiked above 65 intraday. The Nikkei rebounded about 10% the next day.",
+"A crowded funding trade links markets that look unrelated. A change at one central bank can hit assets worldwide."]},
+{id:"deepseek",cat:"shock",year:2025,when:"27 January 2025",place:"USA / China",name:"The DeepSeek Shock",hook:"A cheaper AI model wiped $589 billion off one company in a day.",stat:["−17%","Nvidia, the largest one-day value loss for any US company"],
+b:["Nvidia had become one of the world's most valuable companies because AI labs were spending hundreds of billions on its chips. A few AI stocks dominated US indices.",
+["Not a fraud. Chinese startup DeepSeek released its R1 model, which matched top US models on many tests and was reportedly trained for a fraction of the cost."],
+"Investors questioned whether AI would really need so much expensive hardware.",
+"Nvidia lost about $589 billion in market value and the Nasdaq fell about 3%. Power and data-centre stocks also fell. Most of the losses were recovered in later months.",
+"Concentration risk: when an index depends on one theme, one piece of news can move the whole market."]},
+{id:"tariffs2025",cat:"shock",year:2025,when:"April 2025",place:"USA / global",name:"The Liberation Day Tariffs",hook:"The biggest two-day fall since 2020, then one of the biggest one-day rallies.",stat:["−10.5%","S&P 500 over 3–4 April 2025"],
+b:["Markets expected US tariffs, but assumed they would be targeted and negotiable.",
+["Not a fraud. On 2 April 2025 the US announced broad \"reciprocal\" tariffs on almost every trading partner, far larger than expected."],
+"China retaliated within days, and fears of a global recession spread.",
+"Trillions of dollars of market value disappeared. Unusually, Treasury yields rose and the dollar fell, so US assets lost their safe-haven role. On 9 April a 90-day pause sent the S&P up about 9.5% in one day.",
+"Policy shocks can reverse in hours. Watch for safe havens that stop behaving like safe havens."]},
+{id:"olympus",cat:"fraud",year:2011,when:"2011",place:"Japan",name:"Olympus",hook:"Twenty years of hidden losses, exposed by the CEO it fired.",stat:["$1.7bn","of losses hidden since the 1990s"],
+b:["Olympus lost money on securities investments after Japan's bubble burst, and executives chose to hide the losses.",
+["It moved the losses to off-book funds (\"tobashi\") and later plugged the hole with huge fees on acquisitions, including about $687 million paid to advisers on the Gyrus deal."],
+"Michael Woodford, the new British CEO, questioned the fees and was fired in October 2011. He went public.",
+"Shares fell about 80%. Executives were convicted, and the auditors were fined.",
+"Japan introduced a Stewardship Code (2014) and a Corporate Governance Code (2015), pushing for independent directors."]},
+{id:"vw",cat:"fraud",year:2015,when:"September 2015",place:"Germany",name:"Volkswagen Dieselgate",hook:"Cars that knew when they were being tested.",stat:["−35%","VW shares in two days"],
+b:["VW marketed \"clean diesel\" cars in the US, where emission limits were strict.",
+["Engineers installed software that detected lab test conditions and switched on full emission controls only then. On the road the cars emitted up to 40 times the legal limit of nitrogen oxides. About 11 million cars were affected worldwide."],
+"Researchers found the gap in road tests, and the US EPA issued a violation notice on 18 September 2015.",
+"CEO Martin Winterkorn resigned and fines, buybacks and settlements cost VW over €30 billion. European auto stocks fell with it.",
+"Regulatory and ESG risk can destroy value as fast as accounting fraud. The scandal sped up the industry's move to electric cars."]},
+{id:"steinhoff",cat:"fraud",year:2017,when:"December 2017",place:"South Africa / Germany",name:"Steinhoff",hook:"A retail empire built on fake transactions.",stat:["−90%","share price within days"],
+b:["Steinhoff grew by buying retailers across Europe, Africa and the US, including Conforama, Pepco and Mattress Firm. It was listed in Frankfurt and Johannesburg.",
+["Investigators later found about €6.5 billion of fictitious or irregular transactions over 2009–2017, using related parties to inflate profits and asset values."],
+"In December 2017 the auditor refused to sign the accounts and CEO Markus Jooste resigned over \"accounting irregularities\".",
+"Shares fell over 60% in a day. South African pension funds, which held large stakes, lost heavily.",
+"Complex groups with many related parties need extra scrutiny. An auditor refusing to sign is a very serious warning."]},
+{id:"luckin",cat:"fraud",year:2020,when:"April 2020",place:"China / USA",name:"Luckin Coffee",hook:"China's Starbucks rival invented a large share of its sales.",stat:["$310m","of 2019 sales fabricated"],
+b:["Luckin grew to thousands of stores in two years and listed on Nasdaq in 2019.",
+["The COO and staff fabricated about RMB 2.2 billion of sales, mainly through fake voucher orders, with matching fake costs. Short seller Muddy Waters circulated an anonymous report in January 2020 that counted customers in stores."],
+"On 2 April 2020 Luckin itself admitted the fraud after an internal investigation.",
+"Shares fell about 75% that day and were delisted in June 2020. The company later restructured and became China's largest coffee chain.",
+"The US passed the Holding Foreign Companies Accountable Act (2020), threatening to delist companies whose auditors US regulators cannot inspect."]},
+{id:"greensill",cat:"fraud",year:2021,when:"March 2021",place:"UK / Switzerland",name:"Greensill Capital",hook:"Debt dressed up as invoices, sold to investors as safe.",stat:["$10bn","of Credit Suisse funds frozen"],
+b:["Greensill offered supply chain finance: paying suppliers early and collecting from the buyer later. Credit Suisse packaged these receivables into funds sold as low risk.",
+["Many \"receivables\" were loans to a few related borrowers, especially Sanjeev Gupta's GFG Alliance. Some were based on future invoices that did not yet exist. Trade credit insurance made the notes look safe."],
+"In March 2021 the insurer declined to renew the cover. Without it, the funds could not continue.",
+"Greensill went into insolvency, and Credit Suisse froze the funds. Together with Archegos weeks later, it helped bring down Credit Suisse.",
+"Supply chain finance can hide debt as trade payables. Accounting standards now require disclosure of supplier finance arrangements."]},
+{id:"terra",cat:"fraud",year:2022,when:"May 2022",place:"Global (crypto)",name:"Terra and Luna",hook:"A \"stablecoin\" held up only by its own sister token.",stat:["~$40bn","wiped out in about a week"],
+b:["Terraform Labs, led by Do Kwon, created UST, a stablecoin meant to stay at $1. Its Anchor protocol paid about 20% a year on UST deposits.",
+["UST had no cash reserves. Its peg relied on being swapped for $1 of LUNA, Terra's other token. This worked only while people valued LUNA."],
+"In May 2022 big withdrawals from Anchor and large UST sales broke the peg. Holders swapped UST for newly minted LUNA, which crashed LUNA, which made UST worse.",
+"LUNA went from about $80 to almost zero within days. Crypto lenders Celsius and Voyager and hedge fund Three Arrows Capital collapsed. Do Kwon pleaded guilty to US fraud charges in 2025.",
+"A promised high yield with no real income behind it is a warning sign, in crypto or anywhere else."]},
+{id:"uti",cat:"india",year:2001,when:"July 2001",place:"India",name:"UTI US-64",hook:"India's most trusted savings scheme froze withdrawals.",stat:["~2 crore","investors in the scheme"],
+b:["Unit Scheme 1964, run by the government-backed UTI, was India's largest mutual fund scheme and was treated as almost risk-free.",
+["It paid steady, high dividends and bought back units at prices above their real value, while investing heavily in equities, including some Ketan Parekh-era stocks."],
+"After the 2000–01 market crash the gap became impossible to hide. In July 2001 UTI suspended buybacks for six months.",
+"The government had to bail out the scheme. UTI was split in 2003, and its mutual fund arm came under SEBI regulation.",
+"Promising fixed payouts on equity investments is a mismatch. Mutual funds should show market-linked NAVs."]},
+{id:"election2004",cat:"india",year:2004,when:"17 May 2004",place:"India",name:"The 2004 Election Shock",hook:"\"India Shining\" lost, and the Sensex had its worst day.",stat:["−11.1%","Sensex on 17 May 2004"],
+b:["The NDA government campaigned on \"India Shining\" and markets expected it to win.",
+["Not a fraud. A surprise result: the Congress-led UPA formed a government relying on Left parties that opposed privatisation."],
+"Left leaders spoke against disinvestment, and markets panicked. Trading was halted twice in the day.",
+"Stocks recovered after Manmohan Singh was named Prime Minister and promised to continue reforms.",
+"Indian markets are sensitive to political continuity. Circuit breakers stopped a disorderly fall."]},
+{id:"franklin",cat:"india",year:2020,when:"April 2020",place:"India",name:"Franklin Templeton India",hook:"Six debt funds shut overnight, with lakhs of investors locked in.",stat:["₹25,000+ cr","of investor money frozen"],
+b:["Some Indian debt funds chased extra yield by buying lower-rated, less liquid corporate bonds while promising easy redemptions.",
+["Franklin's six credit-focused schemes held many such papers, some with hard-to-sell structures."],
+"COVID lockdowns brought heavy redemptions and the bond market for lower-rated papers froze. On 23 April 2020 Franklin wound up the six schemes.",
+"About 3 lakh investors were locked in. The RBI opened a ₹50,000 crore liquidity window for mutual funds. A Supreme Court-supervised process returned most of the money over the following years.",
+"Liquidity mismatch hits funds too. SEBI tightened rules on liquid assets, risk labels and investor voting on wind-ups."]},
+{id:"adani",cat:"india",year:2023,when:"January 2023",place:"India",name:"The Adani–Hindenburg Episode",hook:"One short seller's report, and India's largest conglomerate lost over $100 billion.",stat:["$100bn+","group market value lost within about a week"],
+b:["The Adani group's listed companies had risen many times over in a few years, making Gautam Adani one of the world's richest people. Adani Enterprises was about to raise ₹20,000 crore through a follow-on offer.",
+["On 24 January 2023 US short seller Hindenburg Research alleged stock manipulation and accounting fraud through offshore shell entities. The group denied all allegations."],
+"Shares crashed and the FPO, though fully subscribed, was withdrawn on 1 February. Questions arose about exposure at LIC and state banks.",
+"A Supreme Court expert committee and SEBI investigated. Hindenburg shut down in January 2025, and SEBI dismissed allegations on related-party transactions in September 2025. Group shares have recovered much of the loss.",
+"Short-seller reports can move markets before any regulator acts. SEBI tightened disclosure of who ultimately owns foreign investor funds."]},
+{id:"janestreet",cat:"india",year:2025,when:"July 2025",place:"India",name:"The Jane Street Order",hook:"A global trading firm accused of steering Bank Nifty on expiry day.",stat:["₹4,843 cr","impounded by SEBI as alleged unlawful gains"],
+b:["India became the world's largest equity options market by contracts traded, driven by retail traders on weekly expiries. SEBI studies showed most individual traders lost money.",
+["SEBI alleged that on expiry days Jane Street bought Bank Nifty stocks and futures in the morning to push the index up while holding much larger options positions that gained if it fell, then sold in the afternoon. Jane Street disputes the allegations."],
+"On 3 July 2025 SEBI issued an interim order barring the group from Indian markets.",
+"Exchange and broker stocks fell on fears of lower options volumes. Jane Street deposited the amount in escrow and was allowed to resume trading later that month, while the case continued.",
+"Expiry-day concentration can be gamed. SEBI has been limiting weekly expiries and increasing intraday position monitoring."]}
+);
+
+/* loss: [US$ bn, what the figure measures]; dd: [% fall, what fell]; rec: months to regain the prior peak (0 = same day, -1 = not yet regained)
+   links: [type, title, url] where type is report | news | ref */
+const W=t=>"https://en.wikipedia.org/wiki/"+t;
+const X={
+tulip:{dd:[90,"Top bulb contract prices"],dates:[["1634","Tulip trading spreads from collectors to the public"],["Nov 1636","Contract prices for rare bulbs climb fastest"],["3 Feb 1637","Haarlem auction draws no buyers"],["Apr 1637","Towns settle contracts at a fraction of value"]],links:[["ref","Tulip mania",W("Tulip_mania")]]},
+southsea:{dd:[85,"South Sea Company shares, peak to Dec 1720"],dates:[["1711","Company founded to take on war debt"],["Jan 1720","Debt-for-shares conversion approved"],["Jun 1720","Bubble Act passed; shares near £1,000"],["Sep 1720","Shares collapse"],["1721","Inquiry; directors' estates seized"]],links:[["ref","South Sea Company",W("South_Sea_Company")]]},
+crash1929:{dd:[89,"Dow Jones Industrial Average"],rec:302,dates:[["3 Sep 1929","Dow peaks at 381"],["24 Oct 1929","Black Thursday"],["29 Oct 1929","Black Tuesday"],["8 Jul 1932","Dow bottoms at 41"],["1933–34","Glass-Steagall, Securities Acts, SEC"],["Nov 1954","Dow regains its 1929 peak"]],links:[["report","Stock Market Crash of 1929 (Federal Reserve History)","https://www.federalreservehistory.org/essays/stock-market-crash-of-1929"],["ref","Wall Street crash of 1929",W("Wall_Street_crash_of_1929")]]},
+blackmonday:{loss:[500,"US market value lost in one day"],dd:[36,"Dow, Aug–Oct 1987"],rec:23,dates:[["25 Aug 1987","Dow peaks at 2,722"],["14–16 Oct","Three days of heavy selling"],["19 Oct 1987","Dow falls 22.6%"],["20 Oct 1987","Fed promises liquidity"],["Jan 1988","Brady Commission report"]],links:[["report","Report of the Presidential Task Force on Market Mechanisms (Brady Report)","https://www.sechistorical.org/collection/papers/1980/1988_0101_BradyReport.pdf"],["report","A Brief History of the 1987 Crash (Federal Reserve)","https://www.federalreserve.gov/econres/feds/a-brief-history-of-the-1987-stock-market-crash-with-a-discussion-of-the-federal-reserve-response.htm"],["ref","Black Monday (1987)",W("Black_Monday_(1987)")]]},
+japan:{dd:[82,"Nikkei 225, 1989 peak to 2009 low"],rec:410,dates:[["Sep 1985","Plaza Accord"],["29 Dec 1989","Nikkei peaks at 38,916"],["1990","BoJ hikes and caps property lending"],["Nov 1997","Yamaichi Securities collapses"],["22 Feb 2024","Nikkei passes its 1989 peak"]],links:[["ref","Japanese asset price bubble",W("Japanese_asset_price_bubble")]]},
+india1991:{dates:[["Aug 1990","Gulf War spikes oil prices"],["Early 1991","Rating downgrades; NRI deposits leave"],["May–Jul 1991","Gold pledged abroad for loans"],["1–3 Jul 1991","Rupee devalued in two steps"],["24 Jul 1991","Reform budget"]],links:[["ref","1991 Indian economic crisis",W("1991_Indian_economic_crisis")]]},
+asian:{dd:[80,"Indonesian rupiah vs US dollar"],dates:[["2 Jul 1997","Thailand floats the baht"],["Aug 1997","IMF package for Thailand"],["Oct 1997","Hong Kong stocks crash"],["Dec 1997","Korea's IMF-led package"],["May 1998","Suharto resigns"]],links:[["report","The IMF and Recent Capital Account Crises (IMF Independent Evaluation Office)","https://www.imf.org/external/np/ieo/2003/cac/index.htm"],["ref","1997 Asian financial crisis",W("1997_Asian_financial_crisis")]]},
+ltcm:{loss:[4.6,"LTCM losses"],dd:[90,"LTCM capital, 1998"],dates:[["1994","LTCM launched"],["17 Aug 1998","Russia defaults"],["Aug–Sep 1998","Fund loses most of its capital"],["23 Sep 1998","NY Fed brokers $3.6bn rescue"],["Apr 1999","President's Working Group report"]],links:[["report","Hedge Funds, Leverage, and the Lessons of LTCM (President's Working Group)","https://www.cftc.gov/tm/tmhedgefundreport.htm"],["report","Near Failure of LTCM (Federal Reserve History)","https://www.federalreservehistory.org/essays/ltcm-near-failure"],["ref","Long-Term Capital Management",W("Long-Term_Capital_Management")]]},
+dotcom:{loss:[5000,"Market value lost, 2000–02"],dd:[78,"Nasdaq Composite"],rec:181,dates:[["9 Aug 1995","Netscape IPO"],["5 Dec 1996","Greenspan's \"irrational exuberance\""],["10 Mar 2000","Nasdaq peaks at 5,048"],["Nov 2000","Pets.com shuts down"],["9 Oct 2002","Nasdaq bottoms"],["Apr 2003","Global analyst research settlement"]],links:[["report","Global Research Analyst Settlement (SEC)","https://www.sec.gov/spotlight/globalsettlement.htm"],["ref","Dot-com bubble",W("Dot-com_bubble")]]},
+gfc:{loss:[11000,"US household wealth lost"],dd:[57,"S&P 500"],rec:66,dates:[["2006","US house prices peak"],["9 Aug 2007","BNP Paribas freezes funds"],["16 Mar 2008","Bear Stearns sold to JPMorgan"],["15 Sep 2008","Lehman files for bankruptcy"],["3 Oct 2008","TARP signed"],["9 Mar 2009","S&P 500 bottoms at 676"],["Jul 2010","Dodd-Frank signed"]],links:[["report","The Financial Crisis Inquiry Report (FCIC)","https://www.govinfo.gov/features/financial-crisis-inquiry-report"],["report","Lehman Brothers Examiner's Report (Valukas)","https://jenner.com/lehman"],["ref","2008 financial crisis",W("2008_financial_crisis")]]},
+eurozone:{loss:[110,"Greek private debt written off, 2012 (≈€107bn)"],dates:[["Oct 2009","Greece revises its deficit"],["May 2010","First Greek bailout"],["Nov 2010","Ireland bailout"],["May 2011","Portugal bailout"],["Mar 2012","Greek debt restructuring"],["26 Jul 2012","Draghi: \"whatever it takes\""]],links:[["report","Draghi's verbatim remarks, 26 July 2012 (BIS)","https://www.bis.org/speeches/20120727-verbatim-remarks-global-investment-conference"],["ref","European debt crisis",W("European_debt_crisis")]]},
+svb:{loss:[16,"Estimated cost to the US deposit insurance fund"],dd:[60,"SVB shares on 9 March 2023"],dates:[["2022","Fed raises rates fastest in decades"],["8 Mar 2023","SVB announces loss and capital raise"],["9 Mar 2023","$42bn withdrawn in a day"],["10 Mar 2023","FDIC takes over SVB"],["12 Mar 2023","All deposits guaranteed"],["19 Mar 2023","UBS agrees to buy Credit Suisse"]],links:[["report","Review of the Federal Reserve's Supervision of SVB (Fed)","https://www.federalreserve.gov/publications/files/svb-review-20230428.pdf"],["report","FINMA report on lessons from the Credit Suisse crisis","https://www.finma.ch/en/news/2023/12/20231219-mm-cs-bericht"],["ref","Collapse of Silicon Valley Bank",W("Collapse_of_Silicon_Valley_Bank")]]},
+barings:{loss:[1.3,"Trading loss (£827m)"],dd:[100,"Barings shareholders' equity"],dates:[["1992","Leeson opens error account 88888"],["17 Jan 1995","Kobe earthquake"],["23 Feb 1995","Leeson flees Singapore"],["26 Feb 1995","Barings collapses"],["6 Mar 1995","ING buys Barings for £1"],["Jul 1995","Board of Banking Supervision report"]],links:[["report","Report into the collapse of Barings Bank (UK Government)","https://www.gov.uk/government/publications/report-into-the-collapse-of-barings-bank"],["ref","Barings Bank",W("Barings_Bank")]]},
+enron:{loss:[74,"Shareholder value lost"],dd:[99,"Enron shares, 2000 peak to Dec 2001"],dates:[["Aug 2000","Shares peak near $90"],["14 Aug 2001","CEO Skilling resigns"],["16 Oct 2001","Q3 loss reported"],["2 Dec 2001","Bankruptcy filing"],["30 Jul 2002","Sarbanes-Oxley signed"]],links:[["report","The Role of the Board of Directors in Enron's Collapse (US Senate)","https://www.hsgac.senate.gov/wp-content/uploads/imo/media/doc/REPORT%20-%20Role%20of%20Board%20of%20Directors%20In%20Enron's%20Collapse%20(July%202002)1.pdf"],["ref","Enron scandal",W("Enron_scandal")]]},
+worldcom:{loss:[180,"Market value lost from peak"],dd:[99,"WorldCom shares"],dates:[["1998","MCI acquisition completed"],["25 Jun 2002","$3.8bn misstatement disclosed"],["21 Jul 2002","Bankruptcy filing"],["Mar 2003","Special committee investigation report"],["Mar 2005","Ebbers convicted"]],links:[["report","SEC litigation release on WorldCom","https://www.sec.gov/litigation/litreleases/lr17588.htm"],["report","Report of Investigation, WorldCom special committee (SEC filing)","https://sec.gov/Archives/edgar/data/723527/000093176303001862/dex991.htm"],["news","WorldCom admits $3.8 billion accounting trick (ABC News)","https://abcnews.go.com/amp/Business/worldcom-admits-38-billion-accounting-trick/story?id=87084"],["ref","WorldCom scandal",W("WorldCom_scandal")]]},
+madoff:{loss:[65,"Paper losses incl. fictitious gains"],dates:[["1960","Madoff's firm founded"],["May 2000","Markopolos's first SEC warning"],["10 Dec 2008","Confesses to his sons"],["11 Dec 2008","Arrested"],["29 Jun 2009","Sentenced to 150 years"],["Aug 2009","SEC Inspector General report"]],links:[["report","Investigation of SEC Failure to Uncover Madoff (SEC OIG, executive summary)","https://SEC.gov/files/oig-509-exec-summary.pdf"],["ref","Madoff investment scandal",W("Madoff_investment_scandal")]]},
+socgen:{loss:[7.2,"Trading loss (€4.9bn)"],dates:[["2005","Unauthorised positions begin"],["18–20 Jan 2008","Fake trades discovered"],["21–23 Jan 2008","Positions unwound"],["24 Jan 2008","Loss announced"],["Oct 2010","Kerviel convicted"]],links:[["report","Société Générale special committee report, Feb 2008","https://www.societegenerale.com/sites/default/files/pressrelase/comiteSpecialFevrier08gb.pdf"],["ref","2008 Société Générale trading loss",W("2008_Soci%C3%A9t%C3%A9_G%C3%A9n%C3%A9rale_trading_loss")]]},
+libor:{loss:[9,"Fines paid by banks"],dates:[["2005–09","Rate manipulation"],["Apr 2008","Press questions LIBOR lowballing"],["27 Jun 2012","Barclays fined"],["Jul 2012","Barclays CEO resigns"],["30 Jun 2023","USD LIBOR ends"]],links:[["report","FSA Final Notice to Barclays, June 2012","https://www.fca.org.uk/publication/final-notices/barclays-jun12.pdf"],["ref","Libor scandal",W("Libor_scandal")]]},
+wirecard:{loss:[27,"Market value lost from 2018 peak (≈€24bn)"],dd:[99,"Wirecard shares"],dates:[["Sep 2018","Joins the DAX"],["30 Jan 2019","FT reports Singapore allegations"],["Feb 2019","BaFin bans short selling"],["18 Jun 2020","EY refuses to sign accounts"],["25 Jun 2020","Insolvency filing"],["Nov 2020","ESMA peer review"]],links:[["report","Fast Track Peer Review on Wirecard (ESMA)","https://www.esma.europa.eu/sites/default/files/library/esma42-111-5349_fast_track_peer_review_report_-_wirecard.pdf"],["ref","Wirecard scandal",W("Wirecard_scandal")]]},
+archegos:{loss:[10,"Losses at lending banks"],dates:[["2013","Archegos launched"],["22 Mar 2021","ViacomCBS share offering"],["26 Mar 2021","Banks start block sales"],["6 Apr 2021","Credit Suisse reports loss"],["29 Jul 2021","Paul Weiss report published"],["May 2024","Hwang convicted"]],links:[["report","Credit Suisse publishes independent review of Archegos losses (Paul Weiss)","https://www.paulweiss.com/practices/litigation/internal-investigations/news/credit-suisse-publishes-independent-review-of-archegos-losses"],["news","Credit Suisse report finds massive culture problem (Fortune)","https://fortune.com/2021/07/29/credit-suisse-report-archegos-loss-bank-massive-culture-problem"],["ref","Archegos Capital Management",W("Archegos_Capital_Management")]]},
+ftx:{loss:[8,"Customer funds missing"],dates:[["2017","Alameda Research founded"],["2019","FTX launched"],["2 Nov 2022","CoinDesk publishes Alameda balance sheet"],["6 Nov 2022","Binance says it will sell FTT"],["11 Nov 2022","Bankruptcy filing"],["2 Nov 2023","Bankman-Fried convicted"]],links:[["report","FTX Debtors' First Interim Report (John J. Ray III)","https://storage.courtlistener.com/recap/gov.uscourts.deb.188450/gov.uscourts.deb.188450.1242.1.pdf"],["news","FTX debtors cite hubris, incompetence and greed (Decrypt)","https://decrypt.co/125818/ftx-debtors-say-hubris-incompetence-greed-root-exchanges-collapse"],["ref","Bankruptcy of FTX",W("Bankruptcy_of_FTX")]]},
+harshad:{loss:[1.6,"Estimated scam size (₹4,000–5,000 cr)"],dates:[["1991","Repo market built on bank receipts"],["Apr 1992","Sensex peaks near 4,467"],["23 Apr 1992","Times of India exposes SBI shortfall"],["Nov 1992","Mehta arrested"],["1992","SEBI gets statutory powers"],["1993","Janakiraman Committee reports completed"]],links:[["report","Janakiraman Committee Reports, 1992–93","https://the1991project.com/sites/default/files/2023-07/1992-93%20Janakiraman%20Committee%20Reports.PDF"],["ref","Harshad Mehta",W("Harshad_Mehta")]]},
+ketan:{dates:[["1999–2000","K-10 stocks rally"],["1 Mar 2001","Market falls on budget day"],["Mar 2001","Madhavpura pay orders bounce"],["30 Mar 2001","Parekh arrested"],["Jul 2001","Rolling settlement; badla ended"],["Dec 2002","Joint Parliamentary Committee report"]],links:[["report","Report of the Joint Committee on Stock Market Scam, 2002 (Vol. 1)","https://the1991project.com/sites/default/files/2024-12/2002_Report%20of%20Joint%20Committee%20on%20stock%20market%20scam%20%26%20matters%20relating%20thereto-%20Ketan%20Parekh-%20reg.%2C%202002%2C%20Vol-1_compressed.pdf"],["ref","Ketan Parekh",W("Ketan_Parekh")]]},
+satyam:{loss:[1.5,"Fraud size (₹7,000+ cr)"],dd:[78,"Satyam shares on 7 Jan 2009"],dates:[["16 Dec 2008","Maytas deal announced, then dropped"],["7 Jan 2009","Raju's confession letter"],["9 Jan 2009","Raju arrested"],["Apr 2009","Tech Mahindra wins bid"],["Jul 2014","SEBI bars Raju, orders disgorgement"],["Apr 2015","Court convicts Raju and others"]],links:[["report","SEBI press release on Satyam order (PR 67/2014)","https://www.sebi.gov.in/sebi_data/docfiles/28591_t.html"],["ref","Satyam scandal",W("Satyam_scandal")]]},
+nsel:{loss:[0.9,"Owed to investors (₹5,600 cr)"],dates:[["2008","NSEL starts trading"],["2012","Paired contracts grow quickly"],["31 Jul 2013","Told to stop new contracts"],["Aug 2013","Payments default"],["Sep 2015","FMC merged into SEBI"]],links:[["news","NSEL scam explained (Outlook Money)","https://www.outlookmoney.com/news/nsel-scam-explained-sebi-settlement-scheme-2025-63-moons-share-price"],["ref","National Spot Exchange",W("National_Spot_Exchange")]]},
+ilfs:{loss:[12.6,"Group debt (₹91,000 cr)"],dates:[["Jun 2018","First group defaults"],["Sep 2018","CP defaults; AAA cut to junk"],["1 Oct 2018","Government replaces the board"],["Oct 2018","NBFC funding freeze spreads"]],links:[["news","Govt took over IL&FS to stop catastrophic damage (Business Standard)","https://www.business-standard.com/amp/article/finance/saving-the-titanic-govt-says-took-over-il-fs-to-stop-catastrophic-damage-118100600115_1.html"],["news","IL&FS insolvency: the journey so far (Bar & Bench)","https://www.barandbench.com/columns/litigation-columns/ilfs-insolvency-the-journey-so-far"]]},
+pnb:{loss:[2,"PNB exposure (₹13,000+ cr)"],dates:[["2011","First fraudulent LoUs issued"],["Jan 2018","New officials find the LoUs"],["14 Feb 2018","PNB discloses the fraud"],["13 Mar 2018","RBI discontinues LoUs"],["Mar 2019","Nirav Modi arrested in London"]],links:[["report","RBI notification discontinuing LoUs and LoCs","https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=11227"],["news","RBI bars banks from issuing LoUs after PNB fraud (Business Standard)","https://www.business-standard.com/amp/article/finance/rbi-bars-banks-from-issuing-lous-after-nirav-modi-choksi-fraud-at-pnb-118031301228_1.html"],["ref","Nirav Modi",W("Nirav_Modi")]]},
+yesbank:{loss:[1.1,"AT1 bonds written off (₹8,400 cr)"],dates:[["Sep 2018","RBI limits Kapoor's term"],["Jun 2019","DHFL defaults"],["5 Mar 2020","Moratorium; withdrawals capped"],["13 Mar 2020","Reconstruction scheme notified"],["18 Mar 2020","Moratorium lifted"],["Sep 2021","Piramal's DHFL takeover completed"]],links:[["report","RBI press release on Yes Bank reconstruction scheme","https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=49479"],["news","Govt puts Yes Bank under moratorium (Business Standard)","https://www.business-standard.com/amp/article/finance/govt-puts-yes-bank-under-moratorium-withdrawals-limited-to-rs-50-000-120030501669_1.html"],["ref","Yes Bank",W("Yes_Bank")]]},
+oil1973:{dd:[48,"S&P 500, Jan 1973 to Oct 1974"],rec:90,dates:[["15 Aug 1971","Dollar's gold link ended"],["6 Oct 1973","Yom Kippur War begins"],["17–20 Oct 1973","Embargo announced"],["Jan 1974","Oil near $12 a barrel"],["Mar 1974","Embargo lifted"],["Nov 1974","IEA founded"]],links:[["report","Oil Embargo, 1973–1974 (US Office of the Historian)","https://history.state.gov/milestones/1969-1976/oil-embargo"],["ref","1973 oil crisis",W("1973_oil_crisis")]]},
+continental:{loss:[4.5,"FDIC rescue package"],dates:[["Jul 1982","Penn Square Bank fails"],["9 May 1984","Rumours start a deposit run"],["17 May 1984","FDIC interim rescue"],["26 Jul 1984","Permanent rescue; FDIC takes 80%"]],links:[["report","Continental Illinois and \"Too Big to Fail\" (FDIC, History of the Eighties)","https://www-s.fdic.gov/bank/historical/history/235_258.pdf"],["report","Continental Illinois: A Bank That Was Too Big to Fail (Federal Reserve History)","https://www.federalreservehistory.org/-/media/Project/FedHistory/FedHistory/Documents/essaysPDFs/Continental-Illinois_-A-Bank-That-Was-Too-Big-to-Fail-_-Federal-Reserve-History.pdf"],["ref","Continental Illinois",W("Continental_Illinois")]]},
+sept11:{loss:[1400,"US market value lost in the reopening week"],dd:[14,"Dow, week of 17 Sep 2001"],rec:2,dates:[["11 Sep 2001","Attacks; US markets closed"],["17 Sep 2001","Markets reopen; Fed cuts 0.5%"],["21 Sep 2001","Worst week since the 1930s ends"],["Nov 2001","Dow back above pre-attack level"]],links:[["ref","Economic effects of the September 11 attacks",W("Economic_effects_of_the_September_11_attacks")]]},
+northernrock:{dd:[32,"Shares on 14 Sep 2007"],dates:[["9 Aug 2007","Money markets freeze"],["13 Sep 2007","BBC reports emergency support"],["14 Sep 2007","Queues form outside branches"],["17 Sep 2007","Government guarantees deposits"],["22 Feb 2008","Nationalised"]],links:[["report","The run on the Rock (House of Commons Treasury Committee)","https://publications.parliament.uk/pa/cm200708/cmselect/cmtreasy/56/5604.htm"],["ref","Northern Rock",W("Northern_Rock")]]},
+flash2010:{loss:[1000,"Market value lost briefly, recovered the same day"],dd:[9,"Dow, intraday"],rec:0,dates:[["6 May 2010, 2:32pm","Large sell algorithm starts"],["2:45pm","Market hits its low"],["~3:07pm","Most losses recovered"],["30 Sep 2010","SEC–CFTC joint report"],["Apr 2015","Navinder Sarao arrested"]],links:[["report","Findings Regarding the Market Events of May 6, 2010 (SEC–CFTC)","https://SEC.GOV/files/marketevents-report.pdf"],["ref","2010 flash crash",W("2010_flash_crash")]]},
+downgrade2011:{dd:[19,"S&P 500, Apr–Oct 2011"],rec:10,dates:[["2 Aug 2011","Debt-ceiling deal signed"],["5 Aug 2011","S&P cuts US to AA+"],["8 Aug 2011","S&P 500 falls 6.7%"],["3 Oct 2011","Market low"]],links:[["ref","2011 United States debt-ceiling crisis",W("2011_United_States_debt-ceiling_crisis")]]},
+fukushima:{dd:[17,"Nikkei 225 over two days"],rec:22,dates:[["11 Mar 2011","Earthquake and tsunami"],["12–15 Mar 2011","Reactor explosions"],["15 Mar 2011","Nikkei falls 10.6%"],["17 Mar 2011","Yen hits a record high"],["18 Mar 2011","G7 intervenes to weaken the yen"],["Jul 2012","Diet investigation report"]],links:[["report","Official report of the Fukushima Nuclear Accident Independent Investigation Commission","https://recovery.preventionweb.net/publication/official-report-fukushima-nuclear-accident-independent-investigation-commission"],["ref","2011 Tōhoku earthquake and tsunami",W("2011_T%C5%8Dhoku_earthquake_and_tsunami")]]},
+olympus:{loss:[1.7,"Investment losses hidden"],dd:[80,"Olympus shares"],dates:[["1990s","Investment losses hidden off-book"],["Apr 2011","Woodford becomes CEO"],["14 Oct 2011","Woodford fired"],["8 Nov 2011","Olympus admits hiding losses"],["6 Dec 2011","Third-party panel reports"]],links:[["news","Panel clears Olympus of organised crime links (Al Jazeera)","https://www.aljazeera.com/amp/economy/2011/12/6/panel-clears-olympus-of-organised-crime-links"],["ref","Olympus scandal",W("Olympus_scandal")]]},
+china2015:{loss:[5000,"Chinese market value lost, Jun–Aug 2015"],dd:[49,"Shanghai Composite, Jun 2015 to Jan 2016"],rec:-1,dates:[["12 Jun 2015","Shanghai peaks at 5,166"],["Jul 2015","State rescue; mass trading halts"],["11 Aug 2015","Yuan devalued about 2%"],["24 Aug 2015","Global sell-off"],["4–7 Jan 2016","Circuit breakers used, then scrapped"]],links:[["ref","2015–2016 Chinese stock market turbulence",W("2015%E2%80%932016_Chinese_stock_market_turbulence")]]},
+vw:{loss:[35,"Fines, buybacks and settlements (€30bn+)"],dd:[35,"VW shares in two days"],dates:[["2006","Defeat software developed"],["May 2014","Road tests find high emissions"],["18 Sep 2015","EPA notice of violation"],["23 Sep 2015","CEO Winterkorn resigns"],["Jan 2017","VW pleads guilty in the US"]],links:[["report","Learn About Volkswagen Violations (US EPA)","https://www.epa.gov/vw/learn-about-volkswagen-violations"],["ref","Volkswagen emissions scandal",W("Volkswagen_emissions_scandal")]]},
+brexit:{loss:[2000,"Global stock value lost over two days"],dd:[14,"FTSE 250 over two days"],rec:2,dates:[["23 Jun 2016","Referendum"],["24 Jun 2016","Pound falls 8% overnight"],["27 Jun 2016","Second day of heavy falls"],["4 Aug 2016","Bank of England cuts rates"],["29 Mar 2017","Article 50 triggered"]],links:[["ref","2016 UK EU membership referendum",W("2016_United_Kingdom_European_Union_membership_referendum")]]},
+steinhoff:{loss:[7.4,"Fictitious and irregular transactions (€6.5bn)"],dd:[90,"Shares within days"],dates:[["Dec 2015","Frankfurt listing"],["Aug 2016","Buys Mattress Firm"],["5 Dec 2017","CEO Jooste resigns"],["6 Dec 2017","Shares fall over 60%"],["15 Mar 2019","PwC investigation findings"]],links:[["news","Steinhoff deals come back to haunt retailer in PwC probe (Bloomberg)","https://www.bloomberg.com/news/articles/2019-03-15/steinhoff-deals-come-back-to-haunt-retailer-in-pwc-investigation"],["news","PwC finds Steinhoff executives inflated profits (Sowetan)","https://www.sowetan.co.za/news/south-africa/2019-03-15-steinhoff-executives-inflated-profits-by-more-than-r100bn-pwc-finds"],["ref","Steinhoff International",W("Steinhoff_International")]]},
+volmageddon:{dd:[10,"S&P 500, 26 Jan–8 Feb 2018"],rec:7,dates:[["26 Jan 2018","S&P 500 record high"],["2 Feb 2018","Strong wage data"],["5 Feb 2018","Dow falls 4.6%; VIX doubles"],["6 Feb 2018","XIV to be shut down"]],links:[["news","Wall Street's worst day since 2011 (Fortune)","https://fortune.com/2018/02/06/wall-street-nyse-traders-dow-jones-drop"]]},
+covid2020:{dd:[34,"S&P 500"],rec:6,dates:[["19 Feb 2020","S&P 500 record high"],["9 Mar 2020","First circuit breaker"],["16 Mar 2020","Dow falls 12.9%"],["23 Mar 2020","Fed's unlimited QE; market low"],["27 Mar 2020","CARES Act signed"],["18 Aug 2020","S&P 500 back at a record"]],links:[["report","Holistic Review of the March Market Turmoil (Financial Stability Board)","https://www.fsb.org/uploads/P171120.pdf"],["ref","2020 stock market crash",W("2020_stock_market_crash")]]},
+oilneg2020:{dates:[["6 Mar 2020","OPEC+ talks collapse"],["15 Apr 2020","CME prepares for negative prices"],["20 Apr 2020","WTI May settles at −$37.63"],["21 Apr 2020","Contract expires"],["Nov 2020","CFTC interim staff report"]],links:[["report","Interim Staff Report: NYMEX WTI Crude Oil Futures, 20 April 2020 (CFTC)","https://cftc.gov/media/5296/InterimStaffReportNYMEX_WTICrudeOil/download"],["ref","2020 Russia–Saudi Arabia oil price war",W("2020_Russia%E2%80%93Saudi_Arabia_oil_price_war")]]},
+luckin:{loss:[0.31,"2019 sales fabricated"],dd:[75,"Shares on 2 Apr 2020"],dates:[["May 2019","Nasdaq IPO"],["31 Jan 2020","Anonymous short report circulates"],["2 Apr 2020","Luckin admits fabricated sales"],["29 Jun 2020","Delisted"],["Dec 2020","SEC settlement, $180m penalty"]],links:[["report","SEC litigation release: Luckin Coffee","https://www.sec.gov/litigation/litreleases/lr-24987"],["ref","Luckin Coffee",W("Luckin_Coffee")]]},
+evergrande:{loss:[300,"Total liabilities"],dd:[99,"Evergrande shares, 2017 peak to delisting"],dates:[["Aug 2020","\"Three red lines\" rules"],["Sep 2021","Misses offshore bond payments"],["Dec 2021","Declared in default"],["29 Jan 2024","Liquidation ordered"],["Aug 2025","Delisted in Hong Kong"]],links:[["news","Court issues winding-up order against Evergrande (RTHK)","https://news.rthk.hk/rthk/en/component/k2/1738209-20240129.htm"],["ref","Evergrande Group",W("Evergrande_Group")]]},
+greensill:{loss:[10,"Credit Suisse funds frozen"],dates:[["2011","Greensill founded"],["2017","Credit Suisse SCF funds launched"],["1 Mar 2021","Insurance lapses; funds frozen"],["8 Mar 2021","Greensill insolvency"],["Jul 2021","UK Treasury Committee report"]],links:[["report","Lessons from Greensill Capital (House of Commons Treasury Committee)","https://committees.parliament.uk/publications/7430/documents/77733/default/"],["ref","Greensill scandal",W("Greensill_scandal")]]},
+archegos_:{},
+ukraine2022:{dd:[33,"MOEX Russia index on 24 Feb 2022"],dates:[["24 Feb 2022","Invasion; MOEX falls 33%"],["26–28 Feb 2022","Reserves frozen; SWIFT bans"],["7 Mar 2022","Brent near $139"],["24 Mar 2022","Moscow share trading partly resumes"]],links:[["news","Russian stock trading to resume after shutdown (Boston Globe)","https://www.bostonglobe.com/2022/03/23/business/russian-stock-trading-resume-after-market-shutdown"],["news","Markets in turmoil as Russia launches invasion (bne IntelliNews)","https://www.intellinews.com/markets-in-turmoil-as-russia-launches-invasion-236046"]]},
+terra:{loss:[40,"Value wiped out"],dd:[99,"LUNA price"],dates:[["Mar 2021","Anchor protocol launched"],["7 May 2022","UST loses its peg"],["9–13 May 2022","LUNA collapses"],["Jun–Jul 2022","3AC, Celsius, Voyager fail"],["Feb 2023","SEC charges Terraform and Kwon"],["Aug 2025","Kwon pleads guilty in the US"]],links:[["report","SEC charges Terraform Labs and Do Kwon (press release)","https://sec.gov/news/press-release/2023-32"],["ref","Terra (blockchain)",W("Terra_(blockchain)")]]},
+giltcrisis:{dates:[["23 Sep 2022","Mini-budget"],["26 Sep 2022","Pound hits a record low"],["28 Sep 2022","Bank of England buys gilts"],["14 Oct 2022","Kwarteng sacked"],["20 Oct 2022","Truss resigns"]],links:[["report","Financial stability buy/sell tools: a gilt market case study (Bank of England)","https://www.bankofengland.co.uk/quarterly-bulletin/2023/2023/financial-stability-buy-sell-tools-a-gilt-market-case-study"],["report","Lessons from the UK's LDI Crisis (IMF working paper)","https://www.imf.org/en/Publications/WP/Issues/2023/09/29/Putting-Out-the-NBFIRE-Lessons-from-the-UK-s-Liability-Driven-Investment-LDI-Crisis-539683"],["news","Pension funds were hours from disaster (CNBC)","https://www.cnbc.com/2022/10/06/bank-of-england-says-pension-funds-were-hours-from-disaster-before-it-intervened.html"],["ref","September 2022 UK mini-budget",W("September_2022_United_Kingdom_mini-budget")]]},
+yen2024:{dd:[25,"Nikkei 225, July peak to 5 Aug 2024"],rec:13,dates:[["11 Jul 2024","Nikkei record high"],["31 Jul 2024","Bank of Japan raises rates"],["2 Aug 2024","Weak US jobs report"],["5 Aug 2024","Nikkei falls 12.4%"],["6 Aug 2024","Nikkei rebounds about 10%"]],links:[["report","The market turbulence and carry trade unwind of August 2024 (BIS Bulletin 90)","https://www.bis.org/publ/bisbull90.htm"]]},
+deepseek:{loss:[589,"Nvidia market value lost in one day"],dd:[17,"Nvidia shares on 27 Jan 2025"],dates:[["26 Dec 2024","DeepSeek V3 released"],["20 Jan 2025","DeepSeek R1 released"],["27 Jan 2025","Nvidia falls 17%"],["28 Jan 2025","Partial rebound"]],links:[["news","Nvidia's $589 billion DeepSeek rout is largest in market history (Bloomberg)","https://www.bloomberg.com/news/articles/2025-01-27/asml-sinks-as-china-ai-startup-triggers-panic-in-tech-stocks"],["news","DeepSeek sparks AI stock selloff (Business Standard)","https://www.business-standard.com/amp/markets/news/deepseek-sparks-ai-stock-selloff-nvidia-loses-record-593-bn-in-mcap-125012800095_1.html"]]},
+tariffs2025:{loss:[6600,"S&P 500 value lost over two days"],dd:[19,"S&P 500, Feb–Apr 2025"],rec:4,dates:[["19 Feb 2025","S&P 500 record high"],["2 Apr 2025","Tariffs announced"],["3–4 Apr 2025","S&P 500 falls 10.5%"],["9 Apr 2025","90-day pause; S&P up 9.5%"],["27 Jun 2025","S&P 500 back at a record"]],links:[["news","Eight charts that reveal the economic impact of the tariffs (Al Jazeera)","https://www.aljazeera.com/economy/2025/4/9/eight-charts-that-reveal-the-economic-impact-of-trumps-tariffs"],["ref","Liberation Day tariffs",W("Liberation_Day_tariffs")]]},
+uti:{dates:[["1964","US-64 launched"],["1998","First US-64 crisis"],["2 Jul 2001","Sales and buybacks frozen"],["Dec 2002","Joint Parliamentary Committee report"],["Feb 2003","UTI split; fund arm under SEBI"]],links:[["report","Report of the Joint Committee on Stock Market Scam, 2002 (covers UTI)","https://the1991project.com/sites/default/files/2024-12/2002_Report%20of%20Joint%20Committee%20on%20stock%20market%20scam%20%26%20matters%20relating%20thereto-%20Ketan%20Parekh-%20reg.%2C%202002%2C%20Vol-1_compressed.pdf"],["ref","Unit Trust of India",W("Unit_Trust_of_India")]]},
+election2004:{dd:[11,"Sensex on 17 May 2004"],dates:[["13 May 2004","Results: UPA wins"],["17 May 2004","Sensex falls 11%; two trading halts"],["22 May 2004","Manmohan Singh sworn in"]],links:[["ref","2004 Indian general election",W("2004_Indian_general_election")]]},
+franklin:{loss:[3.3,"Investor money frozen (₹25,000+ cr)"],dates:[["23 Apr 2020","Six debt schemes wound up"],["27 Apr 2020","RBI ₹50,000 cr window for mutual funds"],["Feb 2021","Supreme Court allows payouts via SBI MF"],["Jun 2021","SEBI penalties"]],links:[["news","Markets regulator penalises Franklin Templeton officials (Business Standard)","https://www.business-standard.com/amp/article/markets/markets-regulator-penalises-franklin-templeton-amc-officials-trustee-121061401107_1.html"],["news","SEBI's Franklin Templeton order sends ripples across MF industry (Business Standard)","https://www.business-standard.com/amp/article/markets/sebi-s-franklin-templeton-order-sends-ripples-across-mf-industry-121060900040_1.html"]]},
+adani:{loss:[100,"Group market value lost at the low"],dates:[["24 Jan 2023","Hindenburg report"],["27–31 Jan 2023","FPO fully subscribed"],["1 Feb 2023","FPO withdrawn"],["Mar 2023","Supreme Court appoints expert panel"],["Jan 2025","Hindenburg shuts down"],["18 Sep 2025","SEBI dismisses related-party allegations"]],links:[["news","Adani loses Asia's richest title after Hindenburg report (Fortune)","https://fortune.com/2023/01/31/gautam-adani-net-worth-richest-asian-mukesh-ambani-hindenburg-research-report"],["news","SEBI clears Adani Group in allegation linked to Hindenburg report (Scroll)","https://scroll.in/latest/1086739/sebi-clears-adani-group-in-allegation-linked-to-hindenburg-report"],["news","SEBI dismisses Hindenburg's allegations (The Week)","https://www.theweek.in/news/biz-tech/2025/09/18/sebi-dismisses-hindenburg-researchs-allegations-against-gautam-adani-adani-group-firms.amp.html"]]},
+janestreet:{loss:[0.57,"Impounded as alleged unlawful gains (₹4,843 cr)"],dates:[["Nov 2024","SEBI limits weekly expiries"],["3 Jul 2025","SEBI interim order"],["Jul 2025","Escrow deposit; trading resumes"]],links:[["report","Interim order: index manipulation by Jane Street group (SEBI)","https://www.sebi.gov.in/enforcement/orders/jul-2025/interim-order-in-the-matter-of-index-manipulation-by-jane-street-group_95040.html"],["news","Zero tolerance for market manipulation: SEBI chief (Business Standard)","https://www.business-standard.com/amp/markets/news/market-manipulation-is-not-going-to-be-tolerated-sebi-chief-on-jane-street-125070500696_1.html"],["ref","Expiry day and the governance of algorithmic trading (ECGI)","https://www.ecgi.global/publications/blog/expiry-day-and-the-governance-of-algorithmic-trading-the-jane-street-episode"]]}
+};
+delete X.archegos_;
+
+const CATS={
+  systemic:{label:"Systemic crisis",color:"var(--c-systemic)"},
+  shock:{label:"Shock event",color:"var(--c-shock)"},
+  india:{label:"India",color:"var(--c-india)"},
+  bubble:{label:"Early bubble",color:"var(--c-bubble)"},
+  fraud:{label:"Corporate fraud",color:"var(--c-fraud)"}
+};
+const order=["systemic","shock","india","bubble","fraud"];
+const BEATS=[["Build-up","the setup"],["Execution","how it worked"],["Trigger","the crack"],["Fallout","who paid"],["Lesson","what changed"]];
+S.forEach(s=>Object.assign(s,X[s.id]||{}));
+S.sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name));
+const byId=Object.fromEntries(S.map(s=>[s.id,s]));
+let filter="all", query="", current=null, showAllLoss=false;
+const $=id=>document.getElementById(id);
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const money=v=>v>=1000?"$"+(v/1000).toFixed(v>=10000?0:1).replace(/\.0$/,"")+"tn":v>=1?"$"+(v>=10?Math.round(v):v.toFixed(1).replace(/\.0$/,""))+"bn":"$"+Math.round(v*1000)+"m";
+const shortName=n=>n.replace(/^The /,"").replace(/ and the .*$/,"").replace(/ \(.*\)$/,"");
+const recText=r=>r==null?null:r===-1?"Not yet":r===0?"Same day":r<24?r+" months":Math.round(r/12)+" years";
+
+/* Tooltip */
+const tip=$("tip");
+function showTip(e,html){tip.innerHTML=html;tip.hidden=false;moveTip(e);}
+function moveTip(e){const w=tip.offsetWidth,h=tip.offsetHeight;let x=e.clientX+14,y=e.clientY+14;if(x+w>innerWidth-8)x=e.clientX-w-14;if(y+h>innerHeight-8)y=e.clientY-h-14;tip.style.left=x+"px";tip.style.top=y+"px";}
+function hideTip(){tip.hidden=true;}
+function bindTips(root){root.querySelectorAll("[data-tip]").forEach(el=>{
+  el.addEventListener("mouseenter",e=>showTip(e,el.dataset.tip));el.addEventListener("mousemove",moveTip);el.addEventListener("mouseleave",hideTip);
+  el.addEventListener("focus",()=>{const r=el.getBoundingClientRect();showTip({clientX:r.right,clientY:r.top},el.dataset.tip);});el.addEventListener("blur",hideTip);
+  if(el.dataset.id){el.addEventListener("click",()=>open(el.dataset.id,true,true));el.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();open(el.dataset.id,true,true);}});}
+});}
+
+/* Ticker tape */
+const TAPE=[["19 OCT 1987","DOW","−22.6%"],["29 OCT 1929","DOW","−11.7%"],["16 MAR 2020","DOW","−12.9%"],["23 MAR 2020","SENSEX","−13.2%"],["5 AUG 2024","NIKKEI","−12.4%"],["17 MAY 2004","SENSEX","−11.1%"],["27 JAN 2025","NVDA","−17.0%"],["24 FEB 2022","MOEX","−33.0%"],["15 MAR 2011","NIKKEI","−10.6%"],["24 JUN 2016","GBP/USD","−8.0%"],["20 APR 2020","WTI MAY","−$37.63"],["8 AUG 2011","S&P 500","−6.7%"],["7 JAN 2009","SATYAM","−78%"],["4 APR 2025","S&P 500","−6.0%"]];
+const tapeHtml=TAPE.map(([d,i,v])=>`<span>${d} · <b>${i}</b> <span class="dn">▼ ${v}</span></span>`).join("");
+$("tape").innerHTML=tapeHtml+tapeHtml;
+
+/* Records */
+const REC=[["Biggest headline loss","gfc","$11tn","US household wealth, 2008"],["Deepest index fall","crash1929","−89%","Dow Jones, 1929–32"],["Longest recovery","japan","34 years","Nikkei, 1989 to 2024"],["Largest one-company loss","deepseek","$589bn","Nvidia in one day, 2025"]];
+$("records").innerHTML=REC.map(([l,id,v,n])=>`<button class="rec" type="button" data-open="${id}"><small>${l}</small><b>${v}</b><span>${n}</span></button>`).join("");
+$("records").querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>open(b.dataset.open,true,true));
+$("eyebrow").textContent=S.length+" cases · 1637 to 2025";
+
+/* Legend */
+const legendHtml=order.map(k=>`<span><i class="dot" style="background:${CATS[k].color}"></i>${CATS[k].label}</span>`).join("");
+$("legend").innerHTML=legendHtml;$("legend2").innerHTML=legendHtml;
+
+/* Timeline */
+function xOf(y){ if(y<=1730) return 70+(y-1630)/100*110; return 250+(y-1920)/(2026-1920)*720; }
+function drawTL(){
+  const lanes={};order.forEach((k,i)=>lanes[k]=40+i*48);
+  let g=`<g font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">`;
+  order.forEach(k=>{g+=`<line x1="60" x2="985" y1="${lanes[k]}" y2="${lanes[k]}" stroke="var(--rule)" stroke-dasharray="2 4"/>`;});
+  g+=`<path d="M205 24 l8 -8 M213 24 l8 -8 M205 266 l8 -8 M213 266 l8 -8" stroke="var(--muted)" fill="none"/>`;
+  g+=`<line x1="60" x2="200" y1="262" y2="262" stroke="var(--rule)"/><line x1="225" x2="985" y1="262" y2="262" stroke="var(--rule)"/>`;
+  [1637,1720].forEach(y=>g+=`<text x="${xOf(y)}" y="282" text-anchor="middle">${y}</text>`);
+  for(let y=1930;y<=2020;y+=10) g+=`<line x1="${xOf(y)}" x2="${xOf(y)}" y1="258" y2="266" stroke="var(--rule)"/><text x="${xOf(y)}" y="282" text-anchor="middle">${y}</text>`;
+  g+=`</g>`;
+  const placed={},pos={};
+  S.forEach(s=>{const k=s.cat;placed[k]=placed[k]||[];let x=xOf(s.year),y=lanes[k],ok=false;
+    for(const dy of [0,-11,11,-21,21]){if(!placed[k].some(p=>Math.abs(p[0]-x)<11&&Math.abs(p[1]-(lanes[k]+dy))<11)){y=lanes[k]+dy;ok=true;break;}}
+    while(!ok){x+=11;if(!placed[k].some(p=>Math.abs(p[0]-x)<11&&p[1]===lanes[k])){y=lanes[k];ok=true;}}
+    placed[k].push([x,y]);pos[s.id]=[x,y];});
+  const dots=S.map(s=>{const [x,y]=pos[s.id];
+    return `<g class="tl-g" data-id="${s.id}" tabindex="0" role="button" aria-label="${esc(s.name)}, ${s.year}" data-tip="<b>${esc(s.name)}</b><span>${esc(s.when)} · ${esc(CATS[s.cat].label)}</span>">
+      <circle cx="${x}" cy="${y}" r="10" fill="transparent"/>
+      <circle cx="${x}" cy="${y}" r="${current===s.id?7:5}" fill="${CATS[s.cat].color}" stroke="var(--bg)" stroke-width="1.5" opacity="${visible(s)?1:.2}"/></g>`;}).join("");
+  let hl="";
+  if(current){const s=byId[current],[x,y]=pos[current];
+    hl=`<g pointer-events="none"><circle cx="${x}" cy="${y}" r="11" fill="none" stroke="var(--ink)" stroke-width="1.5"/>
+    <text x="${Math.min(Math.max(x,110),880)}" y="${y-16}" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="12" font-weight="600" fill="var(--ink)" stroke="var(--bg)" stroke-width="4" paint-order="stroke">${esc(shortName(s.name))}</text></g>`;}
+  $("tl").innerHTML=g+dots+hl;bindTips($("tl"));
+}
+
+/* Loss chart (horizontal bars, log scale) */
+const LMIN=0.1,LMAX=20000;
+const lx=(v,x0,w)=>x0+(Math.log10(v)-Math.log10(LMIN))/(Math.log10(LMAX)-Math.log10(LMIN))*w;
+function drawLoss(){
+  const all=S.filter(s=>s.loss).sort((a,b)=>b.loss[0]-a.loss[0]);
+  const rows=showAllLoss?all:all.slice(0,15);
+  const W=1000,lab=240,x0=lab+10,w=W-x0-70,rh=26,top=24,H=top+rows.length*rh+6;
+  let g=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Headline losses by case on a log scale">`;
+  [0.1,1,10,100,1000,10000].forEach(t=>{const x=lx(t,x0,w);g+=`<line x1="${x}" x2="${x}" y1="${top-6}" y2="${H}" stroke="var(--rule)"/><text x="${x}" y="12" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">${money(t)}</text>`;});
+  rows.forEach((s,i)=>{const y=top+i*rh,bw=Math.max(lx(s.loss[0],x0,w)-x0,3);
+    g+=`<g class="bar-row" data-id="${s.id}" tabindex="0" role="button" aria-label="${esc(s.name)}: ${money(s.loss[0])}" data-tip="<b>${esc(s.name)}</b>${money(s.loss[0])} · ${esc(s.loss[1])}">
+      <rect x="0" y="${y}" width="${W}" height="${rh}" fill="transparent"/>
+      <text class="bar-lab" x="${lab}" y="${y+rh/2+4}" text-anchor="end" font-size="13" fill="var(--ink)" font-family="IBM Plex Sans, sans-serif">${esc((n=>n.length>32?n.slice(0,31)+"…":n)(SHORT[s.id]||shortName(s.name)))}</text>
+      <rect x="${x0}" y="${y+5}" width="${bw}" height="${rh-10}" rx="4" fill="${CATS[s.cat].color}"/>
+      <text x="${x0+bw+6}" y="${y+rh/2+4}" font-size="12" font-family="IBM Plex Mono, monospace" fill="var(--muted)">${money(s.loss[0])}</text></g>`;});
+  g+=`</svg>`;
+  $("lossChart").innerHTML=`<div class="scroll-x">${g}</div>`;
+  $("lossChart").querySelector("svg").style.minWidth="640px";
+  $("lossMore").textContent=showAllLoss?"Show top 15":"Show all "+all.length+" cases";
+  bindTips($("lossChart"));
+}
+$("lossMore").onclick=()=>{showAllLoss=!showAllLoss;drawLoss();};
+
+/* Scatter: drawdown vs months to recover */
+const SHORT={downgrade2011:"US downgrade",yen2024:"Yen carry unwind",fukushima:"Fukushima",tariffs2025:"2025 tariffs",covid2020:"COVID-19",volmageddon:"Volmageddon",sept11:"9/11",brexit:"Brexit",flash2010:"Flash Crash",blackmonday:"Black Monday",oil1973:"1973 oil shock",gfc:"2008 crisis",dotcom:"Dot-com",crash1929:"1929 crash",japan:"Japan bubble",china2015:"China crash and yuan devaluation",evergrande:"Evergrande",eurozone:"Eurozone debt crisis",harshad:"Harshad Mehta scam",socgen:"Société Générale (Kerviel)",adani:"Adani–Hindenburg"};
+const NUDGE={sept11:[8,-8,"start"],brexit:[8,12,"start"],volmageddon:[-9,4,"end"],flash2010:[8,4,"start"],tariffs2025:[8,4,"start"],covid2020:[8,4,"start"],downgrade2011:[-9,4,"end"],yen2024:[8,-6,"start"],fukushima:[-9,4,"end"],blackmonday:[8,4,"start"],oil1973:[8,4,"start"],gfc:[-8,4,"end"],dotcom:[-8,4,"end"],crash1929:[-8,4,"end"],japan:[-8,4,"end"]};
+function drawScatter(){
+  const pts=S.filter(s=>s.dd&&s.rec!=null&&s.rec>=0);
+  const W=640,H=400,L=56,R=20,T=16,B=48,pw=W-L-R,ph=H-T-B;
+  const ymin=Math.log10(0.5),ymax=Math.log10(600);
+  const X=v=>L+v/100*pw, Y=m=>T+ph-(Math.log10(Math.max(m,0.5))-ymin)/(ymax-ymin)*ph;
+  let g=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Index fall versus months to recover">`;
+  [0,20,40,60,80,100].forEach(v=>{g+=`<line x1="${X(v)}" x2="${X(v)}" y1="${T}" y2="${T+ph}" stroke="var(--rule)"/><text x="${X(v)}" y="${T+ph+18}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">${v?"−"+v:0}%</text>`;});
+  [[0.5,"same day"],[1,"1 mo"],[6,"6 mo"],[12,"1 yr"],[60,"5 yrs"],[120,"10 yrs"],[360,"30 yrs"]].forEach(([m,l])=>{g+=`<line x1="${L}" x2="${L+pw}" y1="${Y(m)}" y2="${Y(m)}" stroke="var(--rule)" stroke-dasharray="${m===0.5?"0":"2 3"}"/><text x="${L-6}" y="${Y(m)+4}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--muted)">${l}</text>`;});
+  g+=`<text x="${L+pw/2}" y="${H-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="IBM Plex Sans, sans-serif">Peak-to-trough fall →</text>`;
+  pts.forEach(s=>{const x=X(s.dd[0]),y=Y(s.rec),n=NUDGE[s.id]||[8,4,"start"];
+    g+=`<g class="tl-g" data-id="${s.id}" tabindex="0" role="button" aria-label="${esc(s.name)}" data-tip="<b>${esc(s.name)}</b>−${s.dd[0]}% · ${esc(s.dd[1])}<br><span>Recovery: ${recText(s.rec)}</span>">
+      <circle cx="${x}" cy="${y}" r="12" fill="transparent"/>
+      <circle cx="${x}" cy="${y}" r="6" fill="${CATS[s.cat].color}" stroke="var(--surface)" stroke-width="2"/>
+      <text x="${x+n[0]}" y="${y+n[1]}" text-anchor="${n[2]}" font-size="11.5" fill="var(--ink)" font-family="IBM Plex Sans, sans-serif" stroke="var(--surface)" stroke-width="3" paint-order="stroke">${esc(SHORT[s.id]||shortName(s.name))}</text></g>`;});
+  g+=`</svg>`;$("scatter").innerHTML=g;bindTips($("scatter"));
+}
+
+/* Decade stacked columns */
+function drawDecades(){
+  const bins=[["Pre-1900",s=>s.year<1900],["1920s",s=>s.year>=1920&&s.year<1930],["1970s",s=>s.year>=1970&&s.year<1980],["1980s",s=>s.year>=1980&&s.year<1990],["1990s",s=>s.year>=1990&&s.year<2000],["2000s",s=>s.year>=2000&&s.year<2010],["2010s",s=>s.year>=2010&&s.year<2020],["2020s",s=>s.year>=2020]];
+  const data=bins.map(([l,f])=>{const c={};order.forEach(k=>c[k]=S.filter(s=>f(s)&&s.cat===k).length);return [l,c,Object.values(c).reduce((a,b)=>a+b,0)];});
+  const max=Math.max(...data.map(d=>d[2]));const top=Math.ceil(max/5)*5;
+  const W=460,H=320,L=28,T=18,B=34,pw=W-L-10,ph=H-T-B,bw=pw/data.length;
+  const Y=v=>T+ph-v/top*ph;
+  let g=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cases per decade stacked by type">`;
+  for(let v=0;v<=top;v+=5) g+=`<line x1="${L}" x2="${W-10}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--rule)"/><text x="${L-6}" y="${Y(v)+4}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--muted)">${v}</text>`;
+  data.forEach(([l,c,t],i)=>{let acc=0;const x=L+i*bw+bw*.18,w=bw*.64;
+    order.forEach(k=>{if(!c[k])return;const y1=Y(acc+c[k]),y0=Y(acc);const h=y0-y1-2;
+      g+=`<rect x="${x}" y="${y1}" width="${w}" height="${Math.max(h,1)}" rx="3" fill="${CATS[k].color}" data-tip="<b>${l}: ${CATS[k].label}</b>${c[k]} case${c[k]>1?"s":""}"/>`;acc+=c[k];});
+    g+=`<text x="${x+w/2}" y="${Y(t)-6}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--ink)">${t}</text>
+        <text x="${x+w/2}" y="${H-12}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--muted)">${l}</text>`;});
+  g+=`</svg>`;$("decades").innerHTML=g;bindTips($("decades"));
+}
+
+/* Filters + list */
+function visible(s){
+  if(filter!=="all"&&s.cat!==filter) return false;
+  if(!query) return true;
+  return (s.name+" "+s.place+" "+s.hook+" "+JSON.stringify(s.b)+" "+JSON.stringify(s.dates||[])).toLowerCase().includes(query);
+}
+function drawFilters(){
+  const opts=[["all","All "+S.length,null],...order.map(k=>[k,CATS[k].label,CATS[k].color])];
+  $("filters").innerHTML=opts.map(([k,l,c])=>`<button class="chip" aria-pressed="${filter===k}" data-f="${k}">${c?`<i class="dot" style="background:${c}"></i>`:""}${l}</button>`).join("");
+  $("filters").querySelectorAll(".chip").forEach(b=>b.onclick=()=>{filter=b.dataset.f;drawFilters();drawList();drawTL();});
+}
+function drawList(){
+  const vis=S.filter(visible);
+  $("list").innerHTML=vis.length?vis.map(s=>`<button data-id="${s.id}" aria-current="${current===s.id}"><i class="dot" style="background:${CATS[s.cat].color}"></i><span class="yr">${s.year}</span><span class="nm">${esc(s.name)}</span></button>`).join("")
+    :`<div class="empty">No case matches “${esc(query)}”.</div>`;
+  $("list").querySelectorAll("button").forEach(b=>b.onclick=()=>open(b.dataset.id,true));
+}
+
+/* Case view */
+const ICON={report:'<svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 1.5h5.5L12.5 4.5V14.5H4z"/><path d="M9.5 1.5v3h3M6 8h4.5M6 10.5h4.5"/></svg>',
+  news:'<svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1.5" y="3" width="13" height="10" rx="1.5"/><path d="M4 6h5M4 8.5h8M4 11h8"/></svg>',
+  ref:'<svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 3.5c2-1 4-1 6 0v10c-2-1-4-1-6 0zM8 3.5c2-1 4-1 6 0v10c-2-1-4-1-6 0z"/></svg>'};
+const LTYPE={report:"Official and regulator reports",news:"News coverage",ref:"Background reading"};
+function contextStrip(s){
+  const all=S.filter(c=>c.loss);const W=1000,x0=10,w=W-20;
+  let g=`<svg viewBox="0 0 ${W} 54" role="img" aria-label="This case's loss compared with every other case">`;
+  g+=`<line x1="${x0}" x2="${x0+w}" y1="22" y2="22" stroke="var(--rule)" stroke-width="2"/>`;
+  [0.1,1,10,100,1000,10000].forEach(t=>{const x=lx(t,x0,w);g+=`<line x1="${x}" x2="${x}" y1="17" y2="27" stroke="var(--rule)"/><text x="${x}" y="46" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">${money(t)}</text>`;});
+  all.forEach(c=>{if(c.id===s.id)return;g+=`<circle cx="${lx(c.loss[0],x0,w)}" cy="22" r="4" fill="var(--faint)" opacity=".55" data-tip="<b>${esc(c.name)}</b>${money(c.loss[0])}" data-id="${c.id}" style="cursor:pointer"/>`;});
+  const x=lx(s.loss[0],x0,w);
+  g+=`<circle cx="${x}" cy="22" r="8" fill="${CATS[s.cat].color}" stroke="var(--surface)" stroke-width="2"/><text x="${Math.min(Math.max(x,40),960)}" y="8" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)" font-family="IBM Plex Sans, sans-serif">This case</text>`;
+  return g+`</svg>`;
+}
+function renderExec(part){
+  return part.map(p=>Array.isArray(p)?`<ol class="flow">${p.map(i=>`<li>${esc(i)}</li>`).join("")}</ol>`:`<p>${esc(p)}</p>`).join("");
+}
+function domain(u){try{return new URL(u).hostname.replace(/^www\./,"");}catch(e){return "";}}
+function drawCase(){
+  const s=byId[current];const vis=S.filter(visible);const list=vis.includes(s)?vis:S;const i=list.indexOf(s);
+  const prev=list[(i-1+list.length)%list.length],next=list[(i+1)%list.length];
+  $("case").style.setProperty("--cat",CATS[s.cat].color);
+  const k=[];
+  k.push(`<div class="kpi"><small>Headline figure</small><b class="neg">${esc(s.stat[0])}</b><span>${esc(s.stat[1])}</span></div>`);
+  k.push(s.loss?`<div class="kpi"><small>Loss in US$</small><b>${money(s.loss[0])}</b><span>${esc(s.loss[1])}</span></div>`:`<div class="kpi"><small>Loss in US$</small><b style="color:var(--faint)">n/a</b><span>No comparable dollar figure</span></div>`);
+  k.push(s.dd?`<div class="kpi"><small>Market fall</small><b class="neg">−${s.dd[0]}%</b><div class="meter" aria-hidden="true"><i style="width:${Math.min(s.dd[0],100)}%"></i></div><span>${esc(s.dd[1])}</span></div>`:`<div class="kpi"><small>Market fall</small><b style="color:var(--faint)">n/a</b><span>No single index captures it</span></div>`);
+  k.push(`<div class="kpi"><small>Recovery</small><b>${recText(s.rec)||"—"}</b><span>${s.rec==null?"Not measured as an index recovery":s.rec===-1?"Index still below its old peak":"To regain the previous peak"}</span></div>`);
+  const groups=["report","news","ref"].map(t=>{const ls=(s.links||[]).filter(l=>l[0]===t);if(!ls.length)return "";
+    return `<div><h5>${ICON[t]}${LTYPE[t]}</h5><ul>${ls.map(l=>`<li><a href="${esc(l[2])}" target="_blank" rel="noopener"><b>${esc(l[1])}</b><span>${esc(domain(l[2]))} ↗</span></a></li>`).join("")}</ul></div>`;}).join("");
+  $("case").innerHTML=`
+    <div class="case-head">
+      <div class="meta"><span class="tag"><i class="dot" style="background:${CATS[s.cat].color}"></i>${CATS[s.cat].label}</span><span>${esc(s.when)}</span><span aria-hidden="true">·</span><span>${esc(s.place)}</span></div>
+      <h2>${esc(s.name)}</h2>
+      <p class="hook">${esc(s.hook)}</p>
+      <div class="kpis">${k.join("")}</div>
+      ${s.loss?`<div class="context"><div class="eyebrow">Loss in context · every case on one log scale</div>${contextStrip(s)}</div>`:""}
+    </div>
+    <div class="case-body">
+      <div class="panel"><h3>The story in five beats</h3>
+        <ol class="beats">${BEATS.map(([h,sub],n)=>`<li class="beat${n===4?" lesson":""}"><div class="num">${n+1}</div><div><h4>${h}<small>${sub}</small></h4><div class="body">${n===1?renderExec(s.b[1]):`<p>${esc(s.b[n])}</p>`}</div></div></li>`).join("")}</ol>
+      </div>
+      <div class="side">
+        ${s.dates?`<div class="panel"><h3>Key dates</h3><ol class="dates">${s.dates.map(([d,t])=>`<li><div><time>${esc(d)}</time><span>${esc(t)}</span></div></li>`).join("")}</ol></div>`:""}
+        ${groups?`<div class="panel"><h3>Reports and reading</h3><div class="links">${groups}</div></div>`:""}
+      </div>
+    </div>
+    <nav class="pager" aria-label="Previous and next case">
+      <button data-id="${prev.id}"><small>← Previous</small>${esc(prev.name)}</button>
+      <button data-id="${next.id}"><small>Next →</small>${esc(next.name)}</button>
+    </nav>`;
+  $("case").querySelectorAll(".pager button").forEach(b=>b.onclick=()=>open(b.dataset.id,true,true));
+  bindTips($("case"));
+}
+function open(id,user,scroll){
+  if(!byId[id]) return;
+  current=id;hideTip();drawCase();drawList();drawTL();
+  try{history.replaceState(null,"","#"+id);}catch(e){}
+  if(user&&(scroll||innerWidth<=820)) $("case").scrollIntoView({behavior:"smooth",block:"start"});
+}
+$("q").addEventListener("input",e=>{query=e.target.value.trim().toLowerCase();drawList();drawTL();});
+
+/* Patterns */
+const PAT=[
+ ["Leverage and margin spirals",["crash1929","ltcm","gfc","archegos","china2015","terra"],"Debt or derivative exposure far larger than equity"],
+ ["Maturity and funding mismatch",["continental","northernrock","ilfs","svb","franklin","evergrande"],"Long or illiquid assets funded by short-term or flighty money"],
+ ["Currency mismatch",["asian","india1991"],"Dollar debt against local-currency income"],
+ ["Off-balance-sheet hiding",["enron","olympus","greensill","pnb","archegos"],"Entities, guarantees, swaps or payables outside the core books"],
+ ["Fake or unverified assets",["satyam","wirecard","luckin","steinhoff","nsel"],"Cash, sales or collateral nobody confirmed directly"],
+ ["Weak controls, no segregation",["barings","socgen","pnb"],"One person trading and settling; no staff rotation"],
+ ["Conflicted gatekeepers",["enron","gfc","dotcom","wirecard"],"The watchdog is paid by, or protecting, the watched"],
+ ["Crowded trades and forced selling",["blackmonday","flash2010","volmageddon","giltcrisis","yen2024"],"Everyone in the same trade with mechanical selling rules"],
+ ["Exogenous and policy shocks",["oil1973","sept11","fukushima","brexit","covid2020","ukraine2022","tariffs2025","election2004"],"Event risk the price assumed away; watch currencies and safe havens"]
+];
+$("pat").innerHTML=PAT.map(([p,ids,w])=>`<tr><td>${p}</td><td>${ids.map(id=>`<button class="lnk" data-id="${id}"><i class="dot" style="background:${CATS[byId[id].cat].color}"></i>${esc(shortName(byId[id].name))}</button>`).join("")}</td><td>${w}</td></tr>`).join("");
+$("pat").querySelectorAll(".lnk").forEach(b=>b.onclick=()=>open(b.dataset.id,true,true));
+const RULES=[["SEC and deposit insurance","crash1929"],["Circuit breakers","blackmonday"],["SEBI's statutory powers, NSE","harshad"],["Rolling settlement, no badla","ketan"],["Sarbanes-Oxley","enron"],["Basel III, Dodd-Frank","gfc"],["Companies Act 2013","satyam"],["SOFR replaces LIBOR","libor"],["NBFC scale-based regulation","ilfs"],["Limit up–limit down bands","flash2010"],["LDI collateral buffers","giltcrisis"],["HFCAA audit inspections","luckin"],["Debt fund liquidity rules","franklin"],["FPI ownership disclosure","adani"],["IEA and oil reserves","oil1973"],["Japan's governance codes","olympus"]];
+$("rules").innerHTML=RULES.map(([r,id])=>`<button class="rule" type="button" data-id="${id}" style="text-align:left;cursor:pointer;color:inherit;font:inherit"><b>${r}</b><span><i class="dot" style="background:${CATS[byId[id].cat].color};margin-right:6px"></i>after ${esc(shortName(byId[id].name))}</span></button>`).join("");
+$("rules").querySelectorAll(".rule").forEach(b=>b.onclick=()=>open(b.dataset.id,true,true));
+
+drawFilters();drawLoss();drawScatter();drawDecades();
+const start=(location.hash||"").slice(1);
+open(byId[start]?start:"gfc",false);
+</script>
